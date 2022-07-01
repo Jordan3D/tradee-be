@@ -1,0 +1,2 @@
+export { CreateAdminBody } from './create';
+
