@@ -1,17 +1,14 @@
 import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import config from '../config/index';
-import { JwtPayload } from './dto/jwtPayload.dto';
-import { AdminService } from '../admin';
+import config from '../config';
 import { UsersService } from '../users';
+import { UserEntity } from 'src/model';
 
 /** passport jwt strategy - for token validation */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  /** JwtStrategy */
   constructor(
-    private readonly adminService: AdminService,
     private readonly userService: UsersService
   ) {
     super({
@@ -21,22 +18,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  /**
-   * validate - token and payload structure
-   * @param {JwtPayload} payload - payload
-   * @returns {Promise<JwtPayload>} - decrypted payload
-   */
-  async validate({userId, role, type}): Promise<JwtPayload> {
+  async validate({userId, type}): Promise<UserEntity | undefined> {
     if (typeof userId !== 'string' || type !== 'access')
       throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
     
-    let user;
-    
-    if(role === 'user'){
-      user = await this.userService.getById(userId);
-    } else if (role === 'admin'){
-      user = await this.adminService.getById(userId);
-    }
+    const user = await this.userService.getById(userId);
   
     if (user === null) throw new UnauthorizedException('User not found');
     

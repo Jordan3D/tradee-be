@@ -11,8 +11,6 @@ import {
   UploadedFile
 } from '@nestjs/common';
 
-import { S3 } from 'aws-sdk';
-
 import { v4 as uuid } from 'uuid'
 
 import {
@@ -51,39 +49,6 @@ export class UsersController {
     const status = 'pending';
     
     return new LoginResponseDto(status, createdUser);
-  }
-  
-  @UseGuards(AuthGuard('jwt'))
-  @Post('/upload_avatar')
-  @UseInterceptors(FileInterceptor('image'))
-  async uploadFile(@Req() request: Request, @UploadedFile() image: Express.Multer.File): Promise<UploadedAvatarDto> {
-    const token = getToken(request);
-    const payload = jwt.verify(token, config.jwtSecret);
-    
-    const file = await this.usersService.uploadAvatar({buffer: image.buffer, name: image.originalname, userId: payload.userId});
-    
-    return {
-      key: file.key,
-      url: file.url
-    }
-  }
-  
-  @UseGuards(AuthGuard('jwt'))
-  @Post('/options')
-  async setUserOptions(@Req() request: Request, @Body() options: {volume: number, language: string}): Promise<boolean> {
-    const token = getToken(request);
-    const payload = jwt.verify(token, config.jwtSecret);
-    
-    // console.log(payload);
-    
-    const user = await this.usersService.getById(payload.userId);
-    if (user === undefined) {
-      throw new NotFoundException('user not found');
-    }
-    
-    await this.usersService.update(user.id, {options});
-    
-    return true;
   }
   
   

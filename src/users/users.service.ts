@@ -3,25 +3,20 @@ import {
   ConflictException,
   Injectable,
 } from '@nestjs/common';
-import { Redis } from 'ioredis';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IUser } from '../interfaces/user';
-import { UserEntity, FileEntity } from '../model';
+import { UserEntity } from '../model';
 import { Repository } from 'typeorm';
 import * as uuid from 'uuid';
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
-import { InjectRedis } from '../util/redis';
-import { FileService } from '../file/file.service';
 /** user service */
 @Injectable()
 export class UsersService {
   
   constructor(
-    @InjectRedis() private readonly redis: Redis,
-    @InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>,
-    private readonly fileService: FileService
+    @InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>
   ) {}
   
   /**
@@ -47,6 +42,7 @@ export class UsersService {
     return await this.userRepo.save(user);
   }
   
+  
   /**
    * getByEmail func
    * @param {string} email - user email
@@ -54,10 +50,6 @@ export class UsersService {
    */
   async getByEmail(email: string): Promise<UserEntity | undefined> {
     const user = await this.userRepo.findOne({ email });
-    if(user && user.avatar){
-      const avatar = await this.fileService.getById(user.avatar);
-      user.avatar = avatar.url;
-    }
     return user;
   }
   
@@ -68,11 +60,6 @@ export class UsersService {
    */
   async getById(id: string, omit?: string[]): Promise<UserEntity | undefined> {
     const user = await this.userRepo.findOne(id);
-    
-    if(user && user.avatar){
-      const avatar = await this.fileService.getById(user.avatar);
-      user.avatar = avatar.url;
-    }
     
     if(omit){
       omit.forEach(o => {
@@ -126,17 +113,5 @@ export class UsersService {
     const one = await this.userRepo.findOne(id);
     const res = await this.userRepo.remove(one);
     return res;
-  }
-  
-  async uploadAvatar({buffer, name, userId}: {buffer: Buffer, name: string, userId: string}): Promise<FileEntity>{
-    const user = await this.userRepo.findOne(userId);
-    
-    if(user.avatar){
-      await this.fileService.deletePublicFile(user.avatar);
-    }
-    const newFile = await this.fileService.uploadPublicFile(buffer, `${userId}_avatar_${name}`);
-    await this.userRepo.update(userId, {avatar: newFile.id});
-  
-    return newFile;
   }
 }

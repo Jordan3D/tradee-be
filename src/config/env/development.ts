@@ -1,5 +1,4 @@
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
-import { REDIS_CLIENT } from 'src/util/redis/constants';
 
 /** Env spicific config */
 module.exports = {
@@ -27,11 +26,6 @@ module.exports = {
         expiresIn: 60 * 60 * 48,
       },
     },
-  },
-  redis: {
-    host: process.env.REDIS_HOST,
-    port: process.env.REDIS_PORT,
-    password: process.env.REDIS_PASSWORD,
   },
   dbConfig:{
     host: process.env.DB_HOST,

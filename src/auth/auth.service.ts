@@ -10,13 +10,13 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as uuid from 'uuid';
+import {validate} from 'isemail';
 import config from '../config/index';
 import { AuthData } from '../interfaces/auth-data.interface';
 import { UsersService } from '../users';
-import { AdminEntity, TokenEntity, UserEntity } from '../model';
+import { TokenEntity, UserEntity } from '../model';
 import { DbTokenDto } from './dto/dbToken.dto';
 import { RefreshTokenResponseDto } from './dto/refreshTokenResponse.dto';
-import { AdminService } from '../admin';
 
 const bcrypt = require('bcrypt');
 
@@ -33,13 +33,19 @@ export class AuthService {
    */
   constructor(
     @InjectRepository(TokenEntity) private readonly tokenRepo:  Repository<TokenEntity>,
-    private readonly usersService: UsersService,
-    private readonly adminService: AdminService
+    private readonly usersService: UsersService
   ) {}
   
-  async validateUser(email: string, password: string): Promise<UserEntity> {
-    const user = await this.usersService.getByEmail(email);
-    
+  async validateUser(identityString: string, password: string): Promise<UserEntity> {
+
+    let user: UserEntity | undefined;
+    // if "identityString" is Email
+    if(validate(identityString)){
+      user = await this.usersService.getByEmail(identityString);
+    } else {
+
+    }
+
     if (!user || user.isDeleted === true || !await bcrypt.compare(password, user.password)) {
       throw new HttpException('user not found', HttpStatus.NOT_FOUND);
     } else {
@@ -47,28 +53,18 @@ export class AuthService {
     }
   }
   
-  async validateAdmin(email: string, password: string): Promise<AdminEntity> {
-    const admin = await this.adminService.getByEmail(email);
-    if (!admin || admin.isDeleted === true || !await bcrypt.compare(password, admin.password)) {
-      throw new HttpException('admin not found', HttpStatus.NOT_FOUND);
-    } else {
-      return admin;
-    }
-  }
-  
-  async signin(auth: AuthData, role: 'admin' | 'user'):
+  async signin(auth: AuthData):
     Promise<{ auth: AuthData; access_token: string; refresh_token: string; expiresIn: number; }> {
     const userId = auth.id;
   
-    const user = role === 'admin' ? await this.adminService.getById(userId) :
-      role === 'user' ? await this.usersService.getById(userId) : undefined;
+    const user = await this.usersService.getById(userId);
     
     if (!user || user.isDeleted) {
       throw new ForbiddenException('Entity profile is deleted.');
     }
     
-    const access_token = await this.generateAccessToken(userId, role);
-    const { id: refreshTokenId, token: refresh_token } = await this.generateRefreshToken(role);
+    const access_token = await this.generateAccessToken(userId);
+    const { id: refreshTokenId, token: refresh_token } = await this.generateRefreshToken();
     
     const res = await this.tokenRepo.create({ tokenId: refreshTokenId, userId });
     await this.tokenRepo.save(res);
@@ -86,12 +82,11 @@ export class AuthService {
    *  @param {string} userId - userId
    * @returns {string} - accessTocken
    */
-  async generateAccessToken(userId: string, role: 'user' | 'admin'): Promise<string> {
+  async generateAccessToken(userId: string): Promise<string> {
     const token = jwt.sign(
       {
         userId,
-        type: config.jwt.tokens.access.type,
-        role
+        type: config.jwt.tokens.access.type
       },
       config.jwtSecret,
       { expiresIn: config.jwt.tokens.access.expiresIn },
@@ -103,17 +98,15 @@ export class AuthService {
    *  generateRefreshToken
    * @returns {id: string, token: string} - refreshtoken and id
    */
-  async generateRefreshToken(role: 'user' | 'admin') {
+  async generateRefreshToken() {
     const payload = {
       id: uuid.v4(),
-      type: config.jwt.tokens.refresh.type,
-      role
+      type: config.jwt.tokens.refresh.type
     };
     const token = jwt.sign(
       {
         userId: payload.id,
-        type: payload.type,
-        role: payload.role
+        type: payload.type
       },
       config.jwtSecret,
       { expiresIn: config.jwt.tokens.refresh.expiresIn },
@@ -156,9 +149,9 @@ export class AuthService {
    * @param {string} userId- userId
    * @returns {RefreshTokenResponseDto} - updated tokens
    */
-  async updateTokens(userId: string, role: 'user'|'admin'): Promise<RefreshTokenResponseDto> {
-    const accessToken = await this.generateAccessToken(userId, role);
-    const refreshToken = await this.generateRefreshToken(role);
+  async updateTokens(userId: string ): Promise<RefreshTokenResponseDto> {
+    const accessToken = await this.generateAccessToken(userId);
+    const refreshToken = await this.generateRefreshToken();
     
     await this.replaceDbRefreshToken(refreshToken.id, userId);
     
@@ -185,7 +178,7 @@ export class AuthService {
           throw new HttpException('token was not found', HttpStatus.NOT_FOUND);
         }
         
-        const updatedTokens = await this.updateTokens(token.userId, payload.role);
+        const updatedTokens = await this.updateTokens(token.userId);
         
         return { ...updatedTokens, userId: token.userId };
       }
