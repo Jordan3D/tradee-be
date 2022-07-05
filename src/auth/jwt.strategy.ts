@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@n
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import config from '../config';
-import { UsersService } from '../users';
+import { UsersService } from '../user';
 import { UserEntity } from 'src/model';
 
 /** passport jwt strategy - for token validation */

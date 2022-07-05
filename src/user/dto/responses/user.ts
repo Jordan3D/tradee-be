@@ -1,3 +1,4 @@
+import { TUserConfig } from 'src/interfaces/user/user.interface';
 import { IUser } from '../../../interfaces/user';
 import { UserEntity } from '../../../model';
 
@@ -8,6 +9,8 @@ export class UserResponseDto implements Omit<UserEntity, 'password'> {
   username: string;
   
   email: string;
+
+  config: TUserConfig;
   
   isDeleted: boolean;
   
@@ -22,6 +25,7 @@ export class UserResponseDto implements Omit<UserEntity, 'password'> {
     this.isDeleted = user.isDeleted;
     this.createdAt = user.createdAt;
     this.updatedAt = user.updatedAt;
+    this.config = user.config;
   }
 }
 

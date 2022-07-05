@@ -5,7 +5,7 @@ import { JwtStrategy } from '../auth/jwt.strategy';
 import config from '../config/index';
 import * as path from 'path';
 import { CreateUserBody } from './dto/requests';
-import { UsersService } from './users.service';
+import { UsersService } from './user.service';
 import { UserEntity } from '../model';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RedisModule } from '../util/redis/redis.module';

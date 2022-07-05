@@ -15,7 +15,7 @@ export class CreateUserBody {
   
   @IsString()
   password: string;
-  
+
   @IsString()
-  name: string;
+  username: string;
 }

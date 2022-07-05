@@ -8,6 +8,7 @@ import { IUser } from '../interfaces/user';
 import { UserEntity } from '../model';
 import { Repository } from 'typeorm';
 import * as uuid from 'uuid';
+import { TUserConfig } from 'src/interfaces/user/user.interface';
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
@@ -21,12 +22,15 @@ export class UsersService {
   
   /**
    * create func
-   * @param {Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>} user - user data
-   * @returns {Promise<UserDocument>} - created user
+   * @param {Partial<Omit<IUser, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted' | 'config'>>} user - user data
+   * @returns {Promise<IUser>} - created user
    */
-  async create(data: Partial<Omit<IUser, 'id' | 'createdAt' | 'updatedAt'>>): Promise<UserEntity> {
-    if (data.email !== undefined && (await this.getByEmail(data.email)) !== undefined)
+  async create(data: Omit<IUser, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted' | 'config'>): Promise<UserEntity> {
+    if ( await this.getByEmail(data.email) !== undefined)
       throw new ConflictException('User with provided email already exists');
+      
+    if ( await this.getByUsername(data.username) !== undefined)
+      throw new ConflictException('User with provided username already exists');
   
     const pHash = await bcrypt.hash(data.password, saltRounds);
     const hashVResult = await bcrypt.compare(data.password, pHash);
@@ -34,10 +38,13 @@ export class UsersService {
     if(!hashVResult){
       throw new BadRequestException('Something went wrong');
     }
+
+    const dataToCreate = {...data} as typeof data & {config: TUserConfig};
     
-    data.password = pHash;
+    dataToCreate.password = pHash;
+    dataToCreate.config = {utc: 3};
   
-    const user = this.userRepo.create(data);
+    const user = this.userRepo.create(dataToCreate);
     
     return await this.userRepo.save(user);
   }
@@ -46,13 +53,23 @@ export class UsersService {
   /**
    * getByEmail func
    * @param {string} email - user email
-   * @returns {Promise<UserDocument | null>} - user
+   * @returns {Promise<IUser | null>} - user
    */
   async getByEmail(email: string): Promise<UserEntity | undefined> {
     const user = await this.userRepo.findOne({ email });
     return user;
   }
   
+  /**
+   * getByUsername func
+   * @param {string} username
+   * @returns {Promise<User | null>} - user
+   */
+   async getByUsername(username: string): Promise<UserEntity | undefined> {
+    const user = await this.userRepo.findOne({ username });
+    return user;
+  }
+
   /**
    * getById func
    * @param {string} id - user id

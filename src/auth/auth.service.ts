@@ -13,7 +13,7 @@ import * as uuid from 'uuid';
 import {validate} from 'isemail';
 import config from '../config/index';
 import { AuthData } from '../interfaces/auth-data.interface';
-import { UsersService } from '../users';
+import { UsersService } from '../user';
 import { TokenEntity, UserEntity } from '../model';
 import { DbTokenDto } from './dto/dbToken.dto';
 import { RefreshTokenResponseDto } from './dto/refreshTokenResponse.dto';
