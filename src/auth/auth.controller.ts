@@ -28,11 +28,6 @@ export class AuthController {
     private readonly authService: AuthService
   ) {}
 
-  /**
-   * /refresh endpoint handler
-   * @param {RefreshTokenDto} refreshToken - refreshToken
-   * @returns {Promise<RefreshTokenResponseDto>} - refreshed tokens
-   */
   @Post('/refresh')
   async refresh(
     @Body() { refresh_token }: RefreshTokenDto,
@@ -45,16 +40,7 @@ export class AuthController {
     );
   }
 
-  /**
-   * /signup
-   * @param {SignInUserDto}  -  telephone and code,
-   * @returns {Promise<UserLoginResponseDto>} - user, tokens, expireIn
-   */
-  @Post('/signin') async signin(@Body() {identityString, password, secret}: SignInDto): Promise<UserLoginResponseDto> {
-
-    if(secret !== undefined && secret !== process.env.SECRET){
-      throw new BadRequestException();
-    }
+  @Post('/signin') async signin(@Body() {identityString, password}: SignInDto): Promise<UserLoginResponseDto> {
     
     const user = await this.authService.validateUser(identityString, password);
     

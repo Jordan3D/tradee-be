@@ -7,6 +7,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { configService } from './config/config.service';
 import { UsersModule } from './user';
+import { TagModule } from './tag';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { UsersModule } from './user';
     }),
     TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
     AuthModule,
-    UsersModule
+    UsersModule,
+    TagModule
   ],
   controllers: [AppController],
   providers: [AppService],

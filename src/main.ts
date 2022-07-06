@@ -6,6 +6,8 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe, Logger } from '@nestjs/common';
 
+declare const module: any;
+
 async function bootstrap() {
   const logger = new Logger('bootstrap');
 
@@ -22,6 +24,12 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   
   await app.listen(config.http.port);
+
+  if (module.hot) {
+    module.hot.accept();
+    module.hot.dispose(() => app.close());
+  }
+
   logger.log(`app is listening on port ${config.http.port}`);
 }
 bootstrap();

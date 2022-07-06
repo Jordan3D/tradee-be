@@ -64,11 +64,6 @@ export class UsersController {
     return new UserResponseDto(user);
   }
 
-  /**
-   * / getById endpoint handler
-   * @param {string} id - user id
-   * @returns {Promise<UserResponseDto>} - user data
-   */
   @UseGuards(AuthGuard('jwt'))
   @Get('/:id')
   async findOne(@Param('id') id: string): Promise<UserResponseDto> {
