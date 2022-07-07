@@ -13,21 +13,17 @@ import {
   Delete
 } from '@nestjs/common';
 
-
 const jwt = require('jsonwebtoken');
 
 import { AuthGuard } from '@nestjs/passport';
 import { CreateBody, UpdateBody } from './dto/requests';
-import { TagResponseDto } from './dto/responses';
+import { ResponseDto } from './dto/responses';
 import { TagService } from './tag.service';
 import { Request } from 'express';
 import config from '../config';
 import { getToken } from '../util';
 import { TagEntity } from 'src/model';
 
-/**
- * users controller
- */
 @Controller('/tag')
 export class TagController {
 
@@ -35,40 +31,40 @@ export class TagController {
   constructor(private readonly tagService: TagService) {}
   
   @Post('/create')
-  async createUser(
+  async create(
     @Body() data: CreateBody,
     @Req() request: Request
-  ): Promise<TagResponseDto> {
-    let createdTag; 
-    const createData = {...data, owner : ''};
+  ): Promise<ResponseDto> {
+    let created : TagEntity; 
+    const createData = {...data, author : ''};
 
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
-    createData.owner = payload.userId;
+    createData.author = payload.userId;
 
     try {
-      createdTag = await this.tagService.create(createData);
+      created = await this.tagService.create(createData);
     } catch(e) {
       throw new BadRequestException('Something was wrong');
     }
     
-    return new TagResponseDto(createdTag);
+    return new ResponseDto(created);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/:id')
-  async findOne(@Param('id') id: string): Promise<TagResponseDto> {
+  async findOne(@Param('id') id: string): Promise<ResponseDto> {
     const tag = await this.tagService.getById(id);
     if (tag === undefined) {
       throw new NotFoundException('Tag not found');
     }
 
-    return new TagResponseDto(tag);
+    return new ResponseDto(tag);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/:id')
-  async update(@Param('id') id: string, @Body() data: UpdateBody, @Req() request: Request): Promise<TagResponseDto> {
+  async update(@Param('id') id: string, @Body() data: UpdateBody, @Req() request: Request): Promise<ResponseDto> {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
     
@@ -77,8 +73,7 @@ export class TagController {
       throw new NotFoundException('Tag not found');
     }
 
-    // TODO: check owner by jwt
-    if(payload.userId !== tag.owner.id){
+    if(payload.userId !== tag.author.id){
       throw new UnauthorizedException('Not allowed to change');
     }
 
@@ -90,7 +85,7 @@ export class TagController {
       throw new BadRequestException('Something was wrong');
     }
     
-    return new TagResponseDto(updatedTag);
+    return new ResponseDto(updatedTag);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -99,17 +94,12 @@ export class TagController {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
 
-    console.log(id);
-
     const tag = await this.tagService.getById(id);
     if (tag === undefined) {
       throw new NotFoundException('Tag not found');
     }
 
-    console.log(2);
-
-    // TODO: check owner by jwt
-    if(payload.userId !== tag.owner.id){
+    if(payload.userId !== tag.author.id){
       throw new UnauthorizedException('Not allowed to delete');
     }
 

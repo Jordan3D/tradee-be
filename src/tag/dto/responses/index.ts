@@ -1,13 +1,13 @@
-import { ITag, ITagFull } from 'src/interfaces/tag.interface';
+import { ITagFull } from 'src/interfaces/tag.interface';
 import { TagEntity, UserEntity } from '../../../model';
 
-export class TagResponseDto implements TagEntity {
+export class ResponseDto implements TagEntity {
   
   id: string;
   
   title: string;
 
-  owner: UserEntity;
+  author: UserEntity;
 
   parent: TagEntity;
 

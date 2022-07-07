@@ -6,7 +6,7 @@ export interface ITagFull extends IBase{
   parent?: TagEntity;
   children?: TagEntity[];
   isMeta?: boolean;
-  owner: UserEntity;
+  author: UserEntity;
 }
 
 export interface ITag extends IBase{
@@ -14,5 +14,5 @@ export interface ITag extends IBase{
   parent?: string;
   children?:  TagEntity[];
   isMeta?: boolean;
-  owner: string;
+  author: string;
 }

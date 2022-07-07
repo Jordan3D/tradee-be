@@ -17,5 +17,5 @@ export class TagEntity extends BaseEntity {
   isMeta: boolean;
 
   @ManyToOne(() => UserEntity, user => user.id, {onDelete: 'NO ACTION', nullable: false})
-  owner: UserEntity;
+  author: UserEntity;
 }
