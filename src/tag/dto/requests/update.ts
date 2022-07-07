@@ -16,9 +16,5 @@ export class UpdateBody {
 
   @IsOptional()
   @IsString()
-  owner?: string;
-
-  @IsOptional()
-  @IsString()
   parent?: string | null;
 }

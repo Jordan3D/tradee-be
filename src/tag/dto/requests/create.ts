@@ -1,5 +1,4 @@
 import {
-  IsArray,
   IsOptional,
   IsString,
   IsBoolean

@@ -1,6 +1,5 @@
 import { TagEntity, UserEntity } from 'src/model';
 import {IBase} from './base.interface';
-import { IUser } from './user';
 
 export interface ITagFull extends IBase{
   title: string;

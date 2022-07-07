@@ -9,7 +9,8 @@ import {
   BadRequestException,
   UnauthorizedException,
   UseGuards,
-  Req
+  Req,
+  Delete
 } from '@nestjs/common';
 
 
@@ -22,6 +23,7 @@ import { TagService } from './tag.service';
 import { Request } from 'express';
 import config from '../config';
 import { getToken } from '../util';
+import { TagEntity } from 'src/model';
 
 /**
  * users controller
@@ -89,5 +91,29 @@ export class TagController {
     }
     
     return new TagResponseDto(updatedTag);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/:id')
+  async delete(@Param('id') id: string, @Req() request: Request): Promise<TagEntity> {
+    const token = getToken(request);
+    const payload = jwt.verify(token, config.jwtSecret);
+
+    console.log(id);
+
+    const tag = await this.tagService.getById(id);
+    if (tag === undefined) {
+      throw new NotFoundException('Tag not found');
+    }
+
+    console.log(2);
+
+    // TODO: check owner by jwt
+    if(payload.userId !== tag.owner.id){
+      throw new UnauthorizedException('Not allowed to delete');
+    }
+
+
+    return this.tagService.delete(id)
   }
 }

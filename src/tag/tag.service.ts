@@ -46,12 +46,11 @@ export class TagService {
     return tag;
   }
 
-  async delete(id: string): Promise<boolean> {
+  async delete(id: string): Promise<TagEntity> {
     const one = await this.tagRepo.findOne(id);
-    one.isDeleted = true;
-    const res = await this.tagRepo.update(id, {isDeleted: true});
+    const res = await this.tagRepo.remove(one);
     
-    return res.raw.isDeleted === true
+    return res;
   }
 
   async update(id: string, updates: Omit<UpdateBody, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted'>): Promise<TagEntity | undefined> {
