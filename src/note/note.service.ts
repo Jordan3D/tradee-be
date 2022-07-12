@@ -6,24 +6,31 @@ import { Repository } from 'typeorm';
 import { UpdateBody } from './dto/requests';
 import { NoteEntity } from 'src/model/note.entity';
 import { INote, INoteFull } from 'src/interfaces/note.interface';
+import { TagsEntity } from 'src/model/tags.entity';
+import { TagsService } from 'src/tags/tags.service';
 
 @Injectable()
 export class NoteService {
   
   constructor(
-    @InjectRepository(NoteService) private readonly rootRepo: Repository<NoteEntity>
+    @InjectRepository(NoteEntity) private readonly rootRepo: Repository<NoteEntity>,
+    private readonly tagsService: TagsService
   ) {}
   
   async create(data: Omit<INote, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted' | 'rating'>): Promise<INoteFull> { 
     const dataToCreate = {...data, author: {id: data.author}}
     const created = this.rootRepo.create(dataToCreate);
+
+    if(created && created.id){
+      this.tagsService.create({tagIds: data.tags, parentId: created.id});
+    }
     
     return await this.rootRepo.save(created);
   }
   
   async getById(id: string, omit?: string[]): Promise<INoteFull | undefined> {
     const findedOne = await this.rootRepo.findOne(id, {
-      relations: ['author', 'children']
+      relations: ['author']
     });
     
     if(omit){

@@ -3,10 +3,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NoteController } from './note.controller';
 import { NoteService } from './note.service';
 import { CommentEntity } from 'src/model/comment.entity';
+import { TagsModule } from 'src/tags';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([CommentEntity])
+    TypeOrmModule.forFeature([CommentEntity]),
+    TagsModule
   ],
   providers: [NoteService],
   exports: [NoteService],

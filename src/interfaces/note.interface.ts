@@ -13,4 +13,5 @@ export interface INote extends IBase{
   content: string;
   author: string;
   rating: number;
+  tags: string[];
 }
