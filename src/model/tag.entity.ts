@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { UserEntity } from './user.entity';
 
@@ -10,7 +10,7 @@ export class TagEntity extends BaseEntity {
   @ManyToOne(() => TagEntity, tag => tag.children, {onDelete: "SET NULL", nullable: true})
   parent: TagEntity;
   
-  @OneToMany(() => TagEntity, tag => tag.parent)
+  @OneToOne(() => TagEntity, tag => tag.parent)
   children: TagEntity[];
 
   @Column({ type: 'boolean', default: false })

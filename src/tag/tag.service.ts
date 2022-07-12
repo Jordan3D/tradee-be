@@ -27,7 +27,7 @@ export class TagService {
   
   async getById(id: string, omit?: string[]): Promise<ITagFull | undefined> {
     const foundOne = await this.tagRepo.findOne(id, {
-      relations: ['parent', 'owner', 'children']
+      relations: ['parent', 'author', 'children']
     });
     
     if(omit){

@@ -2,7 +2,7 @@ import {
     Injectable
   } from '@nestjs/common';
   import { InjectRepository } from '@nestjs/typeorm';
-  import { TagsEntity } from '../model';
+  import { TagEntity, TagsEntity } from '../model';
   import { Repository } from 'typeorm';
   
   @Injectable()
@@ -13,7 +13,7 @@ import {
     ) {}
     
     async create({parentId, tagIds}: Readonly<{tagIds: string[], parentId: string}>): Promise<TagsEntity[]> {
-      const created = this.rootRepo.create(tagIds.map(item => ({parentId, tagId: item, parentType: 'note'})));
+      const created = this.rootRepo.create(tagIds.map(item => ({parentId, tag: item, parentType: 'note'})));
       console.log(created);
       return await this.rootRepo.save(created);
     }
@@ -21,7 +21,7 @@ import {
     async getByParentId(parentId: string): Promise<string[]> {
       const result = await this.rootRepo.find({parentId});
       
-      return result ? result.map(item => item.tagId) : [];
+      return result ? result.map(item => (item.tag as TagEntity).id) : [];
     }
   
     async delete({parentId, tagIds}: Readonly<{tagIds: string[], parentId: string}>): Promise<boolean> {
