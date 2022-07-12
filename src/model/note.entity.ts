@@ -2,8 +2,11 @@ import { Entity, Column, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { UserEntity } from './user.entity';
 
-@Entity({ name: 'comment' })
-export class CommentEntity extends BaseEntity {
+@Entity({ name: 'note' })
+export class NoteEntity extends BaseEntity {
+  @Column({ type: 'varchar', length: 56, default: '' })
+  title: string;
+
   @Column({ type: 'varchar', length: 400, default: '' })
   content: string;
 
@@ -12,10 +15,4 @@ export class CommentEntity extends BaseEntity {
 
   @Column({ type: 'integer', default: 0})
   rating: number
-
-  @Column({ type: 'varchar'})
-  parentId: string;
-
-  @Column({ type: 'varchar'})
-  parentType: 'note' | 'idea'
 }

@@ -46,7 +46,7 @@ export class AuthService {
 
     }
 
-    if (!user || user.isDeleted === true || !await bcrypt.compare(password, user.password)) {
+    if (!user || !await bcrypt.compare(password, user.password)) {
       throw new HttpException('user not found', HttpStatus.NOT_FOUND);
     } else {
       return user;
@@ -59,7 +59,7 @@ export class AuthService {
   
     const user = await this.usersService.getById(userId);
     
-    if (!user || user.isDeleted) {
+    if (!user) {
       throw new ForbiddenException('Entity profile is deleted.');
     }
     

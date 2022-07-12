@@ -15,8 +15,6 @@ export class ResponseDto implements TagEntity {
 
   isMeta: boolean;
   
-  isDeleted: boolean;
-  
   createdAt: Date;
   
   updatedAt: Date;

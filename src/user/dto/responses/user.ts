@@ -12,8 +12,6 @@ export class UserResponseDto implements Omit<UserEntity, 'password'> {
 
   config: TUserConfig;
   
-  isDeleted: boolean;
-  
   createdAt: Date;
   
   updatedAt: Date;
@@ -22,7 +20,6 @@ export class UserResponseDto implements Omit<UserEntity, 'password'> {
     this.id = user.id;
     this.username = user.username;
     this.email = user.email;
-    this.isDeleted = user.isDeleted;
     this.createdAt = user.createdAt;
     this.updatedAt = user.updatedAt;
     this.config = user.config;

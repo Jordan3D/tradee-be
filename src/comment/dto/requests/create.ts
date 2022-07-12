@@ -7,5 +7,7 @@ export class CreateBody {
   content: string;
 
   @IsString()
-  parent: string;
+  parentId: string;
+
+  parentType: 'note' | 'idea' 
 }

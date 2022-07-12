@@ -15,7 +15,7 @@ export class CommentService {
   ) {}
   
   async create(data: Omit<IComment, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted' | 'rating'>): Promise<ICommentFull> { 
-    const dataToCreate = {...data, author: {id: data.author}, parent: {id: data.parent}}
+    const dataToCreate = {...data, author: {id: data.author}}
     const created = this.commentRepo.create(dataToCreate);
     
     return await this.commentRepo.save(created);
@@ -23,7 +23,7 @@ export class CommentService {
   
   async getById(id: string, omit?: string[]): Promise<ICommentFull | undefined> {
     const findedOne = await this.commentRepo.findOne(id, {
-      relations: ['parent', 'owner', 'children']
+      relations: ['author', 'children']
     });
     
     if(omit){
@@ -51,7 +51,7 @@ export class CommentService {
       return error;
     }
     return this.commentRepo.findOne(id, {
-      relations: ['parent', 'author']
+      relations: ['author']
     });
   }
   

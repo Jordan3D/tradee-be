@@ -107,19 +107,6 @@ export class UsersService {
     }
     return this.userRepo.findOne(id);
   }
-
-  /**
-   * deleteById func
-   * @param {string} id - user id
-   * @returns {Promise<UserDocument | null>} - user
-   */
-  async delete(id: string): Promise<boolean> {
-    const one = await this.userRepo.findOne(id);
-    one.isDeleted = true;
-    const res = await this.userRepo.update(id, {isDeleted: true});
-    
-    return res.raw.isDeleted === true
-  }
   
   /**
    * removeById func
