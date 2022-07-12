@@ -14,7 +14,7 @@ export class TagService {
     @InjectRepository(TagEntity) private readonly tagRepo: Repository<TagEntity>
   ) {}
   
-  async create(data: Omit<ITag, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted'>): Promise<TagEntity> {
+  async create(data: Omit<ITag, 'id' | 'createdAt' | 'updatedAt' >): Promise<TagEntity> {
     const dataToCreate = {
       ...data, 
       parent: data.parent ? {id: data.parent} : undefined,
@@ -48,7 +48,7 @@ export class TagService {
     return res;
   }
 
-  async update(id: string, updates: Omit<UpdateBody, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted'>): Promise<TagEntity | undefined> {
+  async update(id: string, updates: Omit<UpdateBody, 'id' | 'createdAt' | 'updatedAt' >): Promise<TagEntity | undefined> {
 
     const dataToUpdate = {};
 
@@ -70,9 +70,9 @@ export class TagService {
     });
   }
   
-  async remove(id: string): Promise<TagEntity> {
+  async remove(id: string): Promise<boolean> {
     const one = await this.tagRepo.findOne(id);
     const res = await this.tagRepo.remove(one);
-    return res;
+    return !!res;
   }
 }

@@ -14,7 +14,7 @@ export class CommentService {
     @InjectRepository(CommentEntity) private readonly commentRepo: Repository<CommentEntity>
   ) {}
   
-  async create(data: Omit<IComment, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted' | 'rating'>): Promise<ICommentFull> { 
+  async create(data: Omit<IComment, 'id' | 'createdAt' | 'updatedAt' | 'rating'>): Promise<ICommentFull> { 
     const dataToCreate = {...data, author: {id: data.author}}
     const created = this.commentRepo.create(dataToCreate);
     
@@ -44,7 +44,7 @@ export class CommentService {
     return res;
   }
 
-  async update(id: string, updates: Omit<UpdateBody, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted' | 'parent' | 'author'>): Promise<ICommentFull | undefined> {
+  async update(id: string, updates: Omit<UpdateBody, 'id' | 'createdAt' | 'updatedAt' | 'parent' | 'author'>): Promise<ICommentFull | undefined> {
     try {
       await this.commentRepo.update(id, updates);
     } catch (error) {

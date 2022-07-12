@@ -43,7 +43,7 @@ export class AuthService {
     if(validate(identityString)){
       user = await this.usersService.getByEmail(identityString);
     } else {
-
+      user = await this.usersService.getByUsername(identityString);
     }
 
     if (!user || !await bcrypt.compare(password, user.password)) {

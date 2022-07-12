@@ -16,5 +16,9 @@ export class UpdateBody {
 
   @IsOptional()
   @IsArray()
-  tags: string[];
+  tagsAdded?: string[];
+
+  @IsOptional()
+  @IsArray()
+  tagsDeleted?: string[];
 }

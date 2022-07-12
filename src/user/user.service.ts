@@ -19,13 +19,8 @@ export class UsersService {
   constructor(
     @InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>
   ) {}
-  
-  /**
-   * create func
-   * @param {Partial<Omit<IUser, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted' | 'config'>>} user - user data
-   * @returns {Promise<IUser>} - created user
-   */
-  async create(data: Omit<IUser, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted' | 'config'>): Promise<UserEntity> {
+
+  async create(data: Omit<IUser, 'id' | 'createdAt' | 'updatedAt' | 'config'>): Promise<UserEntity> {
     if ( await this.getByEmail(data.email) !== undefined)
       throw new ConflictException('User with provided email already exists');
       
@@ -106,16 +101,5 @@ export class UsersService {
       return error;
     }
     return this.userRepo.findOne(id);
-  }
-  
-  /**
-   * removeById func
-   * @param {string} id - user id
-   * @returns {Promise<UserDocument | null>} - user
-   */
-  async remove(id: string): Promise<UserEntity> {
-    const one = await this.userRepo.findOne(id);
-    const res = await this.userRepo.remove(one);
-    return res;
   }
 }

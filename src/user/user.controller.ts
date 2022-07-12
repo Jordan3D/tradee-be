@@ -7,21 +7,13 @@ import {
   Param,
   Post, Req,
   UseGuards,
-  UseInterceptors,
-  UploadedFile
 } from '@nestjs/common';
-
-import { v4 as uuid } from 'uuid'
-
-import {
-  FileInterceptor
-} from '@nestjs/platform-express';
 
 const jwt = require('jsonwebtoken');
 
 import { AuthGuard } from '@nestjs/passport';
 import { CreateUserBody } from './dto/requests';
-import { LoginResponseDto, UserResponseDto, UploadedAvatarDto } from './dto/responses';
+import { UserResponseDto } from './dto/responses';
 import { UsersService } from './user.service';
 import { Request } from 'express';
 import config from '../config';

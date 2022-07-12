@@ -6,6 +6,7 @@ export interface INoteFull extends IBase{
   content: string;
   author: UserEntity;
   rating: number;
+  tags: string[];
 }
 
 export interface INote extends IBase{

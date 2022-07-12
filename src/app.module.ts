@@ -9,6 +9,7 @@ import { configService } from './config/config.service';
 import { UsersModule } from './user';
 import { TagModule } from './tag';
 import { CommentModule } from './comment/comment.module';
+import { NoteModule } from './note';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { CommentModule } from './comment/comment.module';
     AuthModule,
     UsersModule,
     TagModule,
-    CommentModule
+    CommentModule,
+    NoteModule
   ],
   controllers: [AppController],
   providers: [AppService],

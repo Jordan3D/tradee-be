@@ -12,21 +12,21 @@ import {
       @InjectRepository(TagsEntity) private readonly rootRepo: Repository<TagsEntity>
     ) {}
     
-    async create(data: Readonly<{tagIds: string[], parentId: string}>): Promise<TagsEntity[]> {
-      const created = this.rootRepo.create(data.tagIds.map(item => ({parentId: data.parentId, tagId: item})));
-      
+    async create({parentId, tagIds}: Readonly<{tagIds: string[], parentId: string}>): Promise<TagsEntity[]> {
+      const created = this.rootRepo.create(tagIds.map(item => ({parentId, tagId: item, parentType: 'note'})));
+      console.log(created);
       return await this.rootRepo.save(created);
     }
     
-    async getByParentId(parentId: string): Promise<string[] | undefined> {
+    async getByParentId(parentId: string): Promise<string[]> {
       const result = await this.rootRepo.find({parentId});
       
-      return result.map(item => item.tagId);
+      return result ? result.map(item => item.tagId) : [];
     }
   
-    async delete(parentId: string, tagId: string): Promise<boolean> {
-      const one = await this.rootRepo.findOne({parentId, tagId});
-      const res = await this.rootRepo.remove(one);
+    async delete({parentId, tagIds}: Readonly<{tagIds: string[], parentId: string}>): Promise<boolean> {
+      const result = await this.rootRepo.find({parentId});
+      const res = await this.rootRepo.remove(result.filter(tag => tagIds.indexOf(tag.id) !== -1));
       
       return !!res;
     }

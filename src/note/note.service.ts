@@ -1,4 +1,6 @@
 import {
+  forwardRef,
+  Inject,
   Injectable,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,7 +8,6 @@ import { Repository } from 'typeorm';
 import { UpdateBody } from './dto/requests';
 import { NoteEntity } from 'src/model/note.entity';
 import { INote, INoteFull } from 'src/interfaces/note.interface';
-import { TagsEntity } from 'src/model/tags.entity';
 import { TagsService } from 'src/tags/tags.service';
 
 @Injectable()
@@ -14,24 +15,35 @@ export class NoteService {
   
   constructor(
     @InjectRepository(NoteEntity) private readonly rootRepo: Repository<NoteEntity>,
+    @Inject(forwardRef(() => TagsService))
     private readonly tagsService: TagsService
   ) {}
   
-  async create(data: Omit<INote, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted' | 'rating'>): Promise<INoteFull> { 
+  async create(data: Omit<INote, 'id' | 'createdAt' | 'updatedAt' | 'rating'>): Promise<INoteFull> { 
     const dataToCreate = {...data, author: {id: data.author}}
     const created = this.rootRepo.create(dataToCreate);
 
-    if(created && created.id){
-      this.tagsService.create({tagIds: data.tags, parentId: created.id});
+    const result = await this.rootRepo.save(created);
+    let tags = [];
+
+    if(result && result.id){
+      tags = await this.tagsService.create({tagIds: data.tags, parentId: result.id});
     }
     
-    return await this.rootRepo.save(created);
+    return {...result, tags};
   }
   
   async getById(id: string, omit?: string[]): Promise<INoteFull | undefined> {
     const findedOne = await this.rootRepo.findOne(id, {
       relations: ['author']
     });
+
+    const result = findedOne ? {...findedOne, tags: []} : undefined;
+
+    if(findedOne.id){
+      result.tags = await this.tagsService.getByParentId(findedOne.id);
+    }
+    
     
     if(omit){
       omit.forEach(o => {
@@ -41,30 +53,34 @@ export class NoteService {
       })
     }
     
-    return findedOne;
+    return result;
   }
 
-  async delete(id: string): Promise<INoteFull> {
+  async delete(id: string): Promise<boolean> {
     const one = await this.rootRepo.findOne(id);
     const res = await this.rootRepo.remove(one);
     
-    return res;
+    return !!res;
   }
 
-  async update(id: string, updates: Omit<UpdateBody, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted' | 'parent' | 'author'>): Promise<INoteFull | undefined> {
+  async update(id: string, updates: Omit<UpdateBody, 'id' | 'createdAt' | 'updatedAt' | 'parent' | 'author'>): Promise<INoteFull | undefined> {
     try {
       await this.rootRepo.update(id, updates);
+
+      if(updates.tagsAdded){
+        this.tagsService.create({parentId: id, tagIds: updates.tagsAdded});
+      }
+      if(updates.tagsDeleted){
+        this.tagsService.delete({parentId: id, tagIds: updates.tagsDeleted});
+      }
     } catch (error) {
       return error;
     }
-    return this.rootRepo.findOne(id, {
+
+    const one = await this.rootRepo.findOne(id, {
       relations: ['author']
     });
-  }
-  
-  async remove(id: string): Promise<INoteFull> {
-    const one = await this.rootRepo.findOne(id);
-    const res = await this.rootRepo.remove(one);
-    return res;
+
+    return {...one, tags: await this.tagsService.getByParentId(id)}
   }
 }

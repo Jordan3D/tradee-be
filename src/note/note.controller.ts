@@ -52,6 +52,7 @@ export class NoteController {
 
       createdEntity = await this.rootService.create(createData);
     } catch (e) {
+      console.log(e);
       throw new BadRequestException('Something was wrong');
     }
 
@@ -98,7 +99,7 @@ export class NoteController {
 
   @UseGuards(AuthGuard('jwt'))
   @Delete('/:id')
-  async delete(@Param('id') id: string, @Req() request: Request): Promise<INoteFull> {
+  async delete(@Param('id') id: string, @Req() request: Request): Promise<boolean> {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
 

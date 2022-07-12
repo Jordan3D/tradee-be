@@ -1,14 +1,14 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NoteController } from './note.controller';
 import { NoteService } from './note.service';
-import { CommentEntity } from 'src/model/comment.entity';
 import { TagsModule } from 'src/tags';
+import { NoteEntity } from 'src/model/note.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([CommentEntity]),
-    TagsModule
+    TypeOrmModule.forFeature([NoteEntity]),
+    forwardRef(() => TagsModule)
   ],
   providers: [NoteService],
   exports: [NoteService],
