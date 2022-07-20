@@ -51,7 +51,7 @@ export class UsersService {
    * @returns {Promise<IUser | null>} - user
    */
   async getByEmail(email: string): Promise<UserEntity | undefined> {
-    const user = await this.userRepo.findOne({ email });
+    const user = await this.userRepo.findOne({ where: {email} });
     return user;
   }
   
@@ -61,7 +61,7 @@ export class UsersService {
    * @returns {Promise<User | null>} - user
    */
    async getByUsername(username: string): Promise<UserEntity | undefined> {
-    const user = await this.userRepo.findOne({ username });
+    const user = await this.userRepo.findOne({ where: {username} });
     return user;
   }
 
@@ -71,7 +71,7 @@ export class UsersService {
    * @returns {Promise<UserDocument | null>} - user
    */
   async getById(id: string, omit?: string[]): Promise<UserEntity | undefined> {
-    const user = await this.userRepo.findOne(id);
+    const user = await this.userRepo.findOne({where: {id}});
     
     if(omit){
       omit.forEach(o => {
@@ -100,6 +100,6 @@ export class UsersService {
     } catch (error) {
       return error;
     }
-    return this.userRepo.findOne(id);
+    return this.userRepo.findOne({where:{id}});
   }
 }

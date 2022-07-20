@@ -123,7 +123,7 @@ export class AuthService {
    * @returns {DbTokenDto} - replaced refreshTocken
    */
   async replaceDbRefreshToken(tokenId, userId): Promise<DbTokenDto> {
-    const token = await this.tokenRepo.findOne({ userId });
+    const token = await this.tokenRepo.findOne({where: {id: userId}});
     if (!token) {
       throw new NotFoundException('Token is not found');
     } else {
@@ -173,7 +173,7 @@ export class AuthService {
       if (payload.type !== 'refresh') {
         throw new NotFoundException('type is not access');
       } else {
-        const token = await this.tokenRepo.findOne({ tokenId: payload.userId });
+        const token = await this.tokenRepo.findOne({where: {tokenId: payload.userId}});
         if (!token) {
           throw new HttpException('token was not found', HttpStatus.NOT_FOUND);
         }
@@ -199,7 +199,7 @@ export class AuthService {
    * @returns {Promise<boolean>} - token
    */
   async deleteToken(id: string): Promise<boolean> {
-    const one = await this.tokenRepo.findOne(id);
+    const one = await this.tokenRepo.findOne({where: {id}});
     const res = await this.tokenRepo.delete(id);
   
     return res.raw.id === id

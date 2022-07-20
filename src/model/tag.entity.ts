@@ -1,6 +1,7 @@
-import { Entity, Column, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
+import { Entity, Column, ManyToOne, OneToOne} from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { UserEntity } from './user.entity';
+
 
 @Entity({ name: 'tag' })
 export class TagEntity extends BaseEntity {
@@ -14,8 +15,11 @@ export class TagEntity extends BaseEntity {
   children: TagEntity[];
 
   @Column({ type: 'boolean', default: false })
-  isMeta: boolean;
+  isMeta?: boolean;
 
   @ManyToOne(() => UserEntity, user => user.id, {onDelete: 'NO ACTION', nullable: false})
   author: UserEntity;
+
+  @Column({type: 'int'})
+  level: number
 }

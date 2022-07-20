@@ -19,13 +19,13 @@ import {
     }
     
     async getByParentId(parentId: string): Promise<string[]> {
-      const result = await this.rootRepo.find({parentId});
+      const result = await this.rootRepo.find({where: {parentId}});
       
       return result ? result.map(item => (item.tag as TagEntity).id) : [];
     }
   
     async delete({parentId, tagIds}: Readonly<{tagIds: string[], parentId: string}>): Promise<boolean> {
-      const result = await this.rootRepo.find({parentId});
+      const result = await this.rootRepo.find({where: {parentId}});
       const res = await this.rootRepo.remove(result.filter(tag => tagIds.indexOf(tag.id) !== -1));
       
       return !!res;

@@ -11,14 +11,16 @@ import { UpdateBody } from './dto/requests';
 export class TagService {
   
   constructor(
-    @InjectRepository(TagEntity) private readonly tagRepo: Repository<TagEntity>
+    @InjectRepository(TagEntity) private readonly tagRepo: Repository <TagEntity>
   ) {}
   
-  async create(data: Omit<ITag, 'id' | 'createdAt' | 'updatedAt' >): Promise<TagEntity> {
+  async create(data: Omit<ITag, 'id' | 'createdAt' | 'updatedAt' | 'children' | 'level'>): Promise<TagEntity> {
+    const parentTag = await this.tagRepo.findOne({where: {id: data.parent}})
     const dataToCreate = {
       ...data, 
-      parent: data.parent ? {id: data.parent} : undefined,
-      author: {id: data.author}
+      parent: parentTag ? {id: parentTag.id} : undefined,
+      author: {id: data.author},
+      level: parentTag ? parentTag.level : 0
     };  
     const created = this.tagRepo.create(dataToCreate);
     
@@ -26,7 +28,8 @@ export class TagService {
   }
   
   async getById(id: string, omit?: string[]): Promise<ITagFull | undefined> {
-    const foundOne = await this.tagRepo.findOne(id, {
+    const foundOne = await this.tagRepo.findOne({
+      where: {id},
       relations: ['parent', 'author', 'children']
     });
     
@@ -41,8 +44,20 @@ export class TagService {
     return foundOne;
   }
 
+  async getAllByAuthor(authorId: string): Promise<ITagFull[] | undefined> {  
+    const results = await this.tagRepo.createQueryBuilder('tag')
+    .leftJoinAndSelect('tag.parent', 'parent')
+    .leftJoinAndSelect('tag.children', 'children')
+    .leftJoinAndSelect('tag.author', 'author')
+    .andWhere("tag.author.id = :authorId", {authorId})
+    .andWhere(" = :authorId", {authorId})
+    .orderBy("tag.level")
+    .getMany();
+    return results;
+  };
+
   async delete(id: string): Promise<TagEntity> {
-    const one = await this.tagRepo.findOne(id);
+    const one = await this.tagRepo.findOne({where: {id}});
     const res = await this.tagRepo.remove(one);
     
     return res;
@@ -51,10 +66,15 @@ export class TagService {
   async update(id: string, updates: Omit<UpdateBody, 'id' | 'createdAt' | 'updatedAt' >): Promise<TagEntity | undefined> {
 
     const dataToUpdate = {};
+    let parent = undefined;
+
+    if(updates.parent){
+      parent = await this.tagRepo.findOne({where: {id: updates.parent}})
+    }
 
     Object.keys(updates).forEach(key => {
       if(['parent'].includes(key)){
-        dataToUpdate[key] = {id: updates[key]}
+        dataToUpdate[key] = {id: updates[key], level: parent.level}
       } else {
         dataToUpdate[key] = updates[key];
       }
@@ -65,13 +85,14 @@ export class TagService {
     } catch (error) {
       return error;
     }
-    return this.tagRepo.findOne(id, {
+    return this.tagRepo.findOne({
+      where: {id},
       relations: ['parent', 'author', 'children']
     });
   }
   
   async remove(id: string): Promise<boolean> {
-    const one = await this.tagRepo.findOne(id);
+    const one = await this.tagRepo.findOne({where: {id}});
     const res = await this.tagRepo.remove(one);
     return !!res;
   }

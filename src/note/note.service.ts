@@ -34,7 +34,8 @@ export class NoteService {
   }
   
   async getById(id: string, omit?: string[]): Promise<INoteFull | undefined> {
-    const findedOne = await this.rootRepo.findOne(id, {
+    const findedOne = await this.rootRepo.findOne({
+      where: {id},
       relations: ['author']
     });
 
@@ -57,7 +58,7 @@ export class NoteService {
   }
 
   async delete(id: string): Promise<boolean> {
-    const one = await this.rootRepo.findOne(id);
+    const one = await this.rootRepo.findOne({where: {id}});
     const res = await this.rootRepo.remove(one);
     
     return !!res;
@@ -77,7 +78,8 @@ export class NoteService {
       return error;
     }
 
-    const one = await this.rootRepo.findOne(id, {
+    const one = await this.rootRepo.findOne({
+      where: {id},
       relations: ['author']
     });
 

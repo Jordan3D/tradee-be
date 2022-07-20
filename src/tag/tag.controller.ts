@@ -41,6 +41,7 @@ export class TagController {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
     createData.author = payload.userId;
+    createData.parent = payload.parent ?? null;
 
     try {
       created = await this.tagService.create(createData);
@@ -49,6 +50,16 @@ export class TagController {
     }
     
     return new ResponseDto(created);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/list')
+  async findAllByUser( @Req() request: Request): Promise<ResponseDto[]>{
+    const token = getToken(request);
+    const payload = jwt.verify(token, config.jwtSecret);
+    payload.userId;
+    
+    return this.tagService.getAllByAuthor(payload.userId);
   }
 
   @UseGuards(AuthGuard('jwt'))

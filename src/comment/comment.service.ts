@@ -22,7 +22,8 @@ export class CommentService {
   }
   
   async getById(id: string, omit?: string[]): Promise<ICommentFull | undefined> {
-    const findedOne = await this.commentRepo.findOne(id, {
+    const findedOne = await this.commentRepo.findOne({
+      where: {id},
       relations: ['author', 'children']
     });
     
@@ -38,7 +39,7 @@ export class CommentService {
   }
 
   async delete(id: string): Promise<ICommentFull> {
-    const one = await this.commentRepo.findOne(id);
+    const one = await this.commentRepo.findOne({where: {id}});
     const res = await this.commentRepo.remove(one);
     
     return res;
@@ -50,13 +51,14 @@ export class CommentService {
     } catch (error) {
       return error;
     }
-    return this.commentRepo.findOne(id, {
+    return this.commentRepo.findOne({
+      where: {id},
       relations: ['author']
     });
   }
   
   async remove(id: string): Promise<ICommentFull> {
-    const one = await this.commentRepo.findOne(id);
+    const one = await this.commentRepo.findOne({where: {id}});
     const res = await this.commentRepo.remove(one);
     return res;
   }

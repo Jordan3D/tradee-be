@@ -13,11 +13,13 @@ export class ResponseDto implements TagEntity {
 
   children: TagEntity[];
 
-  isMeta: boolean;
+  isMeta?: boolean;
   
   createdAt: Date;
   
   updatedAt: Date;
+
+  level: number;
 
   constructor(tag: ITagFull) {
     Object.keys(tag).forEach(key => {

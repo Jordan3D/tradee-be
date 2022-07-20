@@ -36,6 +36,7 @@ export class UsersController {
   async createUser(
     @Body() data: CreateUserBody,
   ): Promise<UserResponseDto> {
+
     const createdUser = await this.usersService.create(data);
     
     return new UserResponseDto(createdUser);
