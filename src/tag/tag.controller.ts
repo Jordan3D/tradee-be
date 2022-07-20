@@ -23,6 +23,7 @@ import { Request } from 'express';
 import config from '../config';
 import { getToken } from '../util';
 import { TagEntity } from 'src/model';
+import { ITag } from 'src/interfaces/tag.interface';
 
 @Controller('/tag')
 export class TagController {
@@ -41,7 +42,7 @@ export class TagController {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
     createData.author = payload.userId;
-    createData.parent = payload.parent ?? null;
+    createData.parent = createData.parent ?? null;
 
     try {
       created = await this.tagService.create(createData);
@@ -54,7 +55,7 @@ export class TagController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/list')
-  async findAllByUser( @Req() request: Request): Promise<ResponseDto[]>{
+  async findAllByUser( @Req() request: Request): Promise<ITag[]>{
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
     payload.userId;

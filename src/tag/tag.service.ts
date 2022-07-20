@@ -11,7 +11,7 @@ import { UpdateBody } from './dto/requests';
 export class TagService {
   
   constructor(
-    @InjectRepository(TagEntity) private readonly tagRepo: Repository <TagEntity>
+    @InjectRepository(TagEntity) private readonly tagRepo: Repository<TagEntity>
   ) {}
   
   async create(data: Omit<ITag, 'id' | 'createdAt' | 'updatedAt' | 'children' | 'level'>): Promise<TagEntity> {
@@ -20,8 +20,9 @@ export class TagService {
       ...data, 
       parent: parentTag ? {id: parentTag.id} : undefined,
       author: {id: data.author},
-      level: parentTag ? parentTag.level : 0
+      level: parentTag ? parentTag.level + 1 : 0
     };  
+   
     const created = this.tagRepo.create(dataToCreate);
     
     return await this.tagRepo.save(created);
@@ -44,16 +45,13 @@ export class TagService {
     return foundOne;
   }
 
-  async getAllByAuthor(authorId: string): Promise<ITagFull[] | undefined> {  
-    const results = await this.tagRepo.createQueryBuilder('tag')
-    .leftJoinAndSelect('tag.parent', 'parent')
-    .leftJoinAndSelect('tag.children', 'children')
-    .leftJoinAndSelect('tag.author', 'author')
-    .andWhere("tag.author.id = :authorId", {authorId})
-    .andWhere(" = :authorId", {authorId})
-    .orderBy("tag.level")
-    .getMany();
-    return results;
+  async getAllByAuthor(authorId: string): Promise<ITag[] | undefined> {  
+    const results = await this.tagRepo.find({
+      where: {author: authorId},
+      relations: ['parent', 'author'],
+      order: {level: 'ASC'}
+    })
+    return results.map(tag => ({...tag, parent: tag?.parent?.id, author: tag.author.id}));
   };
 
   async delete(id: string): Promise<TagEntity> {
