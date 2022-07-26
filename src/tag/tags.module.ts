@@ -1,13 +1,11 @@
-import { forwardRef, Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { TagController } from './tag.controller';
+import { Module } from '@nestjs/common';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { TagService } from './tag.service';
-import { TagsEntity } from '../model';
-import { UsersModule } from 'src/user';
+import { TagsEntity } from 'src/models';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([TagsEntity])
+    SequelizeModule.forFeature([TagsEntity])
   ],
   providers: [TagService],
   exports: [TagService],

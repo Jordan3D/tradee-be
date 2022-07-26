@@ -1,8 +1,8 @@
 import { TUserConfig } from 'src/interfaces/user/user.interface';
 import { IUser } from '../../../interfaces/user';
-import { UserEntity } from '../../../model';
+import { UserEntity } from 'src/models';
 
-export class UserResponseDto implements Omit<UserEntity, 'password'> {
+export class UserResponseDto implements Omit<IUser, 'password'> {
   
   id: string;
   

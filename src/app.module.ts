@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import * as path from 'path';
 import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { configService } from './config/config.service';
 import { UsersModule } from './user';
 import { TagModule } from './tag';
 import { CommentModule } from './comment/comment.module';
@@ -16,7 +15,17 @@ import { NoteModule } from './note';
     ServeStaticModule.forRoot({
       rootPath: path.join(__dirname, '..', 'static'),
     }),
-    TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
+    SequelizeModule.forRoot({
+      dialect: 'postgres',
+      host: "127.0.0.1",
+      port: 5432,
+      username: "igoryovka",
+      password: "1111",
+      database: "postgres",
+      autoLoadModels: true,
+      synchronize: true,
+      
+    }),
     AuthModule,
     UsersModule,
     TagModule,

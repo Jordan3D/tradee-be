@@ -23,9 +23,6 @@ import { NoteService } from './note.service';
 import { Request } from 'express';
 import config from '../config';
 import { getToken } from '../util';
-import { TagEntity } from 'src/model';
-import { ICommentFull } from 'src/interfaces/comment.interface';
-import { INoteFull } from 'src/interfaces/note.interface';
 
 /**
  * users controller
@@ -44,11 +41,11 @@ export class NoteController {
     let createdEntity;
 
     try {
-      const createData = { ...data, author: '' };
+      const createData = { ...data, authorId: '' };
       const token = getToken(request);
       const payload = jwt.verify(token, config.jwtSecret);
 
-      createData.author = payload.userId;
+      createData.authorId = payload.userId;
 
       createdEntity = await this.rootService.create(createData);
     } catch (e) {
@@ -82,7 +79,7 @@ export class NoteController {
     }
 
     // TODO: check owner by jwt
-    if (payload.userId !== entity.author.id) {
+    if (payload.userId !== entity.authorId) {
       throw new UnauthorizedException('Not allowed to change');
     }
 
@@ -109,7 +106,7 @@ export class NoteController {
     }
 
     // TODO: check author by jwt
-    if (payload.userId !== entity.author.id) {
+    if (payload.userId !== entity.authorId) {
       throw new UnauthorizedException('Not allowed to delete');
     }
 

@@ -1,37 +1,33 @@
 import {
   Injectable
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { ITag, ITagFull } from '../interfaces/tag.interface';
-import { TagEntity } from '../model';
-import { Repository } from 'typeorm';
+import { InjectModel} from '@nestjs/sequelize';
+import { ITag } from '../interfaces/tag.interface';
+import { TagEntity } from 'src/models';
 import { UpdateBody } from './dto/requests';
 
 @Injectable()
 export class TagService {
   
   constructor(
-    @InjectRepository(TagEntity) private readonly tagRepo: Repository<TagEntity>
+    @InjectModel(TagEntity) private readonly tagModel: typeof TagEntity
   ) {}
   
-  async create(data: Omit<ITag, 'id' | 'createdAt' | 'updatedAt' | 'children' | 'level'>): Promise<TagEntity> {
-    const parentTag = await this.tagRepo.findOne({where: {id: data.parent}})
+  async create(data: Omit<ITag, 'id' | 'createdAt' | 'updatedAt' | 'level'>): Promise<TagEntity> {
+    const parentTag = await this.tagModel.findOne({where: {id: data.parentId}})
     const dataToCreate = {
       ...data, 
       parent: parentTag ? {id: parentTag.id} : undefined,
-      author: {id: data.author},
+      author: {id: data.authorId},
       level: parentTag ? parentTag.level + 1 : 0
     };  
-   
-    const created = this.tagRepo.create(dataToCreate);
     
-    return await this.tagRepo.save(created);
+    return await this.tagModel.create(dataToCreate);
   }
   
-  async getById(id: string, omit?: string[]): Promise<ITagFull | undefined> {
-    const foundOne = await this.tagRepo.findOne({
-      where: {id},
-      relations: ['parent', 'author', 'children']
+  async getById(id: string, omit?: string[]): Promise<ITag | undefined> {
+    const foundOne = await this.tagModel.findOne({
+      where: {id}
     });
     
     if(omit){
@@ -46,19 +42,15 @@ export class TagService {
   }
 
   async getAllByAuthor(authorId: string): Promise<ITag[] | undefined> {  
-    const results = await this.tagRepo.find({
+    const results = await this.tagModel.findAll({
       where: {author: authorId},
-      relations: ['parent', 'author'],
-      order: {level: 'ASC'}
+      order: [['level','ASC']]
     })
-    return results.map(tag => ({...tag, parent: tag?.parent?.id, author: tag.author.id}));
+    return results.map(tag => ({...tag, parent: tag?.parentId, author: tag.authorId}));
   };
 
-  async delete(id: string): Promise<TagEntity> {
-    const one = await this.tagRepo.findOne({where: {id}});
-    const res = await this.tagRepo.remove(one);
-    
-    return res;
+  async delete(id: string): Promise<boolean> {    
+    return !! await this.tagModel.destroy({where: {id}});;
   }
 
   async update(id: string, updates: Omit<UpdateBody, 'id' | 'createdAt' | 'updatedAt' >): Promise<TagEntity | undefined> {
@@ -66,8 +58,8 @@ export class TagService {
     const dataToUpdate = {};
     let parent = undefined;
 
-    if(updates.parent){
-      parent = await this.tagRepo.findOne({where: {id: updates.parent}})
+    if(updates.parentId){
+      parent = await this.tagModel.findOne({where: {id: updates.parentId}})
     }
 
     Object.keys(updates).forEach(key => {
@@ -79,19 +71,17 @@ export class TagService {
     })
 
     try {
-      await this.tagRepo.update(id, dataToUpdate);
+      await this.tagModel.update(dataToUpdate, {where: {id}});
     } catch (error) {
       return error;
     }
-    return this.tagRepo.findOne({
-      where: {id},
-      relations: ['parent', 'author', 'children']
+    return this.tagModel.findOne({
+      where: {id}
     });
   }
   
   async remove(id: string): Promise<boolean> {
-    const one = await this.tagRepo.findOne({where: {id}});
-    const res = await this.tagRepo.remove(one);
+    const res = await this.tagModel.destroy({where: {id}});
     return !!res;
   }
 }

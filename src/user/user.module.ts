@@ -1,13 +1,13 @@
-import { forwardRef, Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { Module } from '@nestjs/common';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { UsersController } from './user.controller';
 import { UsersService } from './user.service';
-import { UserEntity } from '../model';
+import { UserEntity } from 'src/models';
 
 /** UsersModule - contains user ops  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity])
+    SequelizeModule.forFeature([UserEntity])
   ],
   providers: [UsersService],
   exports: [UsersService],

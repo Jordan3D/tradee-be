@@ -1,5 +1,3 @@
-import { UserEntity } from 'src/model';
-import { NoteEntity } from 'src/model/note.entity';
 import {IBase} from './base.interface';
 import { IUser } from './user';
 

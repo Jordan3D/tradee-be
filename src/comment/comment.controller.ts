@@ -23,7 +23,7 @@ import { CommentService } from './comment.service';
 import { Request } from 'express';
 import config from '../config';
 import { getToken } from '../util';
-import { TagEntity } from 'src/model';
+import { TagEntity } from 'src/models';
 import { ICommentFull } from 'src/interfaces/comment.interface';
 
 /**
@@ -97,7 +97,7 @@ export class CommentController {
 
   @UseGuards(AuthGuard('jwt'))
   @Delete('/:id')
-  async delete(@Param('id') id: string, @Req() request: Request): Promise<ICommentFull> {
+  async delete(@Param('id') id: string, @Req() request: Request): Promise<boolean> {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
 
@@ -112,6 +112,6 @@ export class CommentController {
     }
 
 
-    return this.commentService.delete(id)
+    return this.commentService.remove(id)
   }
 }

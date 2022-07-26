@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { PassportModule } from '@nestjs/passport';
 import { UsersModule } from '../user';
-import { TokenEntity } from '../model';
+import { TokenEntity } from 'src/models';
 import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import config from '../config';
@@ -12,7 +12,7 @@ import { LocalStrategy } from './local.strategy';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([TokenEntity]),
+    SequelizeModule.forFeature([TokenEntity]),
     UsersModule,
     PassportModule,
     JwtModule.register({

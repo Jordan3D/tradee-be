@@ -14,5 +14,5 @@ export class CreateBody {
 
   @IsOptional()
   @IsString()
-  parent: string | null;
+  parentId: string | null;
 }

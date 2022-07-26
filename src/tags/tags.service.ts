@@ -1,32 +1,28 @@
 import {
     Injectable
   } from '@nestjs/common';
-  import { InjectRepository } from '@nestjs/typeorm';
-  import { TagEntity, TagsEntity } from '../model';
-  import { Repository } from 'typeorm';
+  import { InjectModel } from '@nestjs/sequelize';
+  import { TagEntity, TagsEntity } from 'src/models';
   
   @Injectable()
   export class TagsService {
     
     constructor(
-      @InjectRepository(TagsEntity) private readonly rootRepo: Repository<TagsEntity>
+      @InjectModel(TagsEntity) private readonly rootModel: typeof TagsEntity
     ) {}
     
     async create({parentId, tagIds}: Readonly<{tagIds: string[], parentId: string}>): Promise<TagsEntity[]> {
-      const created = this.rootRepo.create(tagIds.map(item => ({parentId, tag: item, parentType: 'note'})));
-      console.log(created);
-      return await this.rootRepo.save(created);
+      return await this.rootModel.bulkCreate(tagIds.map(item => ({parentId, tag: item, parentType: 'note'})));
     }
     
     async getByParentId(parentId: string): Promise<string[]> {
-      const result = await this.rootRepo.find({where: {parentId}});
+      const result = await this.rootModel.findAll({where: {parentId}});
       
-      return result ? result.map(item => (item.tag as TagEntity).id) : [];
+      return result ? result.map(item => item.tagId) : [];
     }
   
     async delete({parentId, tagIds}: Readonly<{tagIds: string[], parentId: string}>): Promise<boolean> {
-      const result = await this.rootRepo.find({where: {parentId}});
-      const res = await this.rootRepo.remove(result.filter(tag => tagIds.indexOf(tag.id) !== -1));
+      const res = await this.rootModel.destroy({where: {parentId, tag: tagIds}});
       
       return !!res;
     }

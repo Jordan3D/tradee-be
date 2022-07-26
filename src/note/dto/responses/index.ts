@@ -1,10 +1,7 @@
-import { IBase } from 'src/interfaces/base.interface';
-import { ICommentFull } from 'src/interfaces/comment.interface';
-import { INoteFull } from 'src/interfaces/note.interface';
-import { IUser } from 'src/interfaces/user';
-import { UserEntity } from 'src/model';
+import { INote } from 'src/interfaces/note.interface';
+import { UserEntity } from 'src/models';
 
-export class ResponseDto implements INoteFull {
+export class ResponseDto implements INote {
   
   id: string;
 
@@ -12,7 +9,7 @@ export class ResponseDto implements INoteFull {
 
   content: string;
 
-  author: UserEntity;
+  authorId: string;
 
   tags: string[];
 
@@ -22,7 +19,7 @@ export class ResponseDto implements INoteFull {
   
   updatedAt: Date;
 
-  constructor(entity: INoteFull) {
+  constructor(entity: INote) {
     Object.keys(entity).forEach(key => {
         this[key] = entity[key];
     })

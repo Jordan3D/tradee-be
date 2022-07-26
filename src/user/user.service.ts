@@ -3,11 +3,10 @@ import {
   ConflictException,
   Injectable,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectModel } from '@nestjs/sequelize';
 import { IUser } from '../interfaces/user';
-import { UserEntity } from '../model';
-import { Repository } from 'typeorm';
-import * as uuid from 'uuid';
+import { UserEntity } from 'src/models';
+
 import { TUserConfig } from 'src/interfaces/user/user.interface';
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
@@ -17,7 +16,7 @@ const saltRounds = 10;
 export class UsersService {
   
   constructor(
-    @InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>
+    @InjectModel(UserEntity) private readonly userModel: typeof UserEntity
   ) {}
 
   async create(data: Omit<IUser, 'id' | 'createdAt' | 'updatedAt' | 'config'>): Promise<UserEntity> {
@@ -37,11 +36,9 @@ export class UsersService {
     const dataToCreate = {...data} as typeof data & {config: TUserConfig};
     
     dataToCreate.password = pHash;
-    dataToCreate.config = {utc: 3};
-  
-    const user = this.userRepo.create(dataToCreate);
+    dataToCreate.config = {utc: 3}; 
     
-    return await this.userRepo.save(user);
+    return await this.userModel.create(dataToCreate);
   }
   
   
@@ -51,7 +48,7 @@ export class UsersService {
    * @returns {Promise<IUser | null>} - user
    */
   async getByEmail(email: string): Promise<UserEntity | undefined> {
-    const user = await this.userRepo.findOne({ where: {email} });
+    const user = await this.userModel.findOne({ where: {email} });
     return user;
   }
   
@@ -61,7 +58,7 @@ export class UsersService {
    * @returns {Promise<User | null>} - user
    */
    async getByUsername(username: string): Promise<UserEntity | undefined> {
-    const user = await this.userRepo.findOne({ where: {username} });
+    const user = await this.userModel.findOne({ where: {username} });
     return user;
   }
 
@@ -71,7 +68,7 @@ export class UsersService {
    * @returns {Promise<UserDocument | null>} - user
    */
   async getById(id: string, omit?: string[]): Promise<UserEntity | undefined> {
-    const user = await this.userRepo.findOne({where: {id}});
+    const user = await this.userModel.findOne({where: {id}});
     
     if(omit){
       omit.forEach(o => {
@@ -85,7 +82,7 @@ export class UsersService {
   }
   
   count() {
-    return this.userRepo.count();
+    return this.userModel.count();
   }
   
   /**
@@ -96,10 +93,10 @@ export class UsersService {
    */
   async update(id: string, updates: Partial<Omit<IUser, 'id' | 'createdAt' | 'updatedAt'>>,): Promise<UserEntity | undefined> {
     try {
-      await this.userRepo.update(id, updates);
+      await this.userModel.update(updates, {where: {id}});
     } catch (error) {
       return error;
     }
-    return this.userRepo.findOne({where:{id}});
+    return this.userModel.findOne({where:{id}});
   }
 }

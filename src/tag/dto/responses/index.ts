@@ -1,17 +1,14 @@
-import { ITagFull } from 'src/interfaces/tag.interface';
-import { TagEntity, UserEntity } from '../../../model';
+import { ITag } from 'src/interfaces/tag.interface';
 
-export class ResponseDto implements TagEntity {
+export class ResponseDto implements ITag {
   
   id: string;
   
   title: string;
 
-  author: UserEntity;
+  authorId: string;
 
-  parent: TagEntity;
-
-  children: TagEntity[];
+  parentId: string;
 
   isMeta?: boolean;
   
@@ -21,7 +18,7 @@ export class ResponseDto implements TagEntity {
 
   level: number;
 
-  constructor(tag: ITagFull) {
+  constructor(tag: ITag) {
     Object.keys(tag).forEach(key => {
         this[key] = tag[key];
     })

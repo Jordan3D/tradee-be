@@ -1,30 +1,27 @@
 import {
   Injectable,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
 import { UpdateBody } from './dto/requests';
-import { CommentEntity } from 'src/model/comment.entity';
+import { CommentEntity } from 'src/models/comment.entity';
 import { IComment, ICommentFull } from 'src/interfaces/comment.interface';
 
 @Injectable()
 export class CommentService {
   
   constructor(
-    @InjectRepository(CommentEntity) private readonly commentRepo: Repository<CommentEntity>
+    @InjectModel(CommentEntity) private readonly commentModel: typeof CommentEntity
   ) {}
   
   async create(data: Omit<IComment, 'id' | 'createdAt' | 'updatedAt' | 'rating'>): Promise<ICommentFull> { 
     const dataToCreate = {...data, author: {id: data.author}}
-    const created = this.commentRepo.create(dataToCreate);
     
-    return await this.commentRepo.save(created);
+    return await this.commentModel.create(dataToCreate);
   }
   
   async getById(id: string, omit?: string[]): Promise<ICommentFull | undefined> {
-    const findedOne = await this.commentRepo.findOne({
-      where: {id},
-      relations: ['author', 'children']
+    const findedOne = await this.commentModel.findOne({
+      where: {id}
     });
     
     if(omit){
@@ -38,28 +35,21 @@ export class CommentService {
     return findedOne;
   }
 
-  async delete(id: string): Promise<ICommentFull> {
-    const one = await this.commentRepo.findOne({where: {id}});
-    const res = await this.commentRepo.remove(one);
-    
-    return res;
+  async remove(id: string): Promise<boolean> {
+    const res = await this.commentModel.destroy({where: {id}});
+    return !!res;
   }
 
   async update(id: string, updates: Omit<UpdateBody, 'id' | 'createdAt' | 'updatedAt' | 'parent' | 'author'>): Promise<ICommentFull | undefined> {
     try {
-      await this.commentRepo.update(id, updates);
+      await this.commentModel.update(updates, {where: {id}});
     } catch (error) {
       return error;
     }
-    return this.commentRepo.findOne({
-      where: {id},
-      relations: ['author']
+    return this.commentModel.findOne({
+      where: {id}
     });
   }
   
-  async remove(id: string): Promise<ICommentFull> {
-    const one = await this.commentRepo.findOne({where: {id}});
-    const res = await this.commentRepo.remove(one);
-    return res;
-  }
+
 }

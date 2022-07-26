@@ -22,7 +22,7 @@ import { TagService } from './tag.service';
 import { Request } from 'express';
 import config from '../config';
 import { getToken } from '../util';
-import { TagEntity } from 'src/model';
+import { TagEntity } from 'src/models';
 import { ITag } from 'src/interfaces/tag.interface';
 
 @Controller('/tag')
@@ -37,12 +37,12 @@ export class TagController {
     @Req() request: Request
   ): Promise<ResponseDto> {
     let created : TagEntity; 
-    const createData = {...data, author : ''};
+    const createData = {...data, authorId : ''};
 
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
-    createData.author = payload.userId;
-    createData.parent = createData.parent ?? null;
+    createData.authorId = payload.userId;
+    createData.parentId = createData.parentId ?? null;
 
     try {
       created = await this.tagService.create(createData);
@@ -85,7 +85,7 @@ export class TagController {
       throw new NotFoundException('Tag not found');
     }
 
-    if(payload.userId !== tag.author.id){
+    if(payload.userId !== tag.authorId){
       throw new UnauthorizedException('Not allowed to change');
     }
 
@@ -102,7 +102,7 @@ export class TagController {
 
   @UseGuards(AuthGuard('jwt'))
   @Delete('/:id')
-  async delete(@Param('id') id: string, @Req() request: Request): Promise<TagEntity> {
+  async delete(@Param('id') id: string, @Req() request: Request): Promise<boolean> {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
 
@@ -111,7 +111,7 @@ export class TagController {
       throw new NotFoundException('Tag not found');
     }
 
-    if(payload.userId !== tag.author.id){
+    if(payload.userId !== tag.authorId){
       throw new UnauthorizedException('Not allowed to delete');
     }
 

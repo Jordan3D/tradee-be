@@ -7,14 +7,13 @@ import {
   MethodNotAllowedException,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectModel } from '@nestjs/sequelize';
 import * as uuid from 'uuid';
 import {validate} from 'isemail';
 import config from '../config/index';
 import { AuthData } from '../interfaces/auth-data.interface';
 import { UsersService } from '../user';
-import { TokenEntity, UserEntity } from '../model';
+import { TokenEntity, UserEntity } from 'src/models';
 import { DbTokenDto } from './dto/dbToken.dto';
 import { RefreshTokenResponseDto } from './dto/refreshTokenResponse.dto';
 
@@ -32,7 +31,7 @@ export class AuthService {
    * @param {UsersService} usersService - inject
    */
   constructor(
-    @InjectRepository(TokenEntity) private readonly tokenRepo:  Repository<TokenEntity>,
+    @InjectModel(TokenEntity) private readonly tokenModel: typeof TokenEntity,
     private readonly usersService: UsersService
   ) {}
   
@@ -66,8 +65,7 @@ export class AuthService {
     const access_token = await this.generateAccessToken(userId);
     const { id: refreshTokenId, token: refresh_token } = await this.generateRefreshToken();
     
-    const res = await this.tokenRepo.create({ tokenId: refreshTokenId, userId });
-    await this.tokenRepo.save(res);
+    await this.tokenModel.create({ tokenId: refreshTokenId, userId });
     
     return {
       auth,
@@ -123,19 +121,17 @@ export class AuthService {
    * @returns {DbTokenDto} - replaced refreshTocken
    */
   async replaceDbRefreshToken(tokenId, userId): Promise<DbTokenDto> {
-    const token = await this.tokenRepo.findOne({where: {id: userId}});
+    const token = await this.tokenModel.findOne({where: {id: userId}});
     if (!token) {
       throw new NotFoundException('Token is not found');
     } else {
       
-      await this.tokenRepo.delete({ userId });
+      await this.tokenModel.destroy({where: { userId }});
       try {
-        const newToken: DbTokenDto = await this.tokenRepo.create({
+        const newToken: DbTokenDto = await this.tokenModel.create({
           tokenId,
           userId: userId,
         });
-  
-        await this.tokenRepo.save(newToken);
         
         return newToken;
       } catch (e) {
@@ -173,7 +169,7 @@ export class AuthService {
       if (payload.type !== 'refresh') {
         throw new NotFoundException('type is not access');
       } else {
-        const token = await this.tokenRepo.findOne({where: {tokenId: payload.userId}});
+        const token = await this.tokenModel.findOne({where: {tokenId: payload.userId}});
         if (!token) {
           throw new HttpException('token was not found', HttpStatus.NOT_FOUND);
         }
@@ -199,10 +195,9 @@ export class AuthService {
    * @returns {Promise<boolean>} - token
    */
   async deleteToken(id: string): Promise<boolean> {
-    const one = await this.tokenRepo.findOne({where: {id}});
-    const res = await this.tokenRepo.delete(id);
+    const res = await this.tokenModel.destroy({where: {id}});
   
-    return res.raw.id === id
+    return !!res
   }
   
 }

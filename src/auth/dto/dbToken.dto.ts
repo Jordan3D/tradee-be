@@ -1,4 +1,4 @@
-import { BaseEntity, TokenEntity } from '../../model';
+import { BaseEntity, TokenEntity } from 'src/models';
 import { Exclude, Expose } from 'class-transformer';
 
 /** token that was returned from db and contains sensitive information */
