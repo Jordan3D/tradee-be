@@ -1,8 +1,8 @@
 import { Table, Column, DataType, ForeignKey } from 'sequelize-typescript';
 import { BaseEntity } from './base.entity';
-import { UserEntity } from './user.entity';
+import { UserEntity } from '../user/user.entity';
 
-@Table({ modelName: 'note' })
+@Table({ modelName: 'Note', freezeTableName: true })
 export class NoteEntity extends BaseEntity {
   @Column({ type: DataType.STRING})
   title: string;

@@ -18,11 +18,14 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataType.UUIDV4,
       allowNull: false,
       primaryKey: true},
+    createdAt: DataType.DATE,
+    updatedAt: DataType.DATE,
     tokenId: DataTypes.STRING,
     userId: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Token',
+    freezeTableName: true
   });
   return Token;
 };

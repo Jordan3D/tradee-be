@@ -1,14 +1,14 @@
-import { Table, Column, DataType, HasMany, HasOne } from 'sequelize-typescript';
-import { BaseEntity } from './base.entity';
-import { UserEntity } from './user.entity';
+import { Table, Column, DataType, ForeignKey } from 'sequelize-typescript';
+import { BaseEntity } from '../models/base.entity';
+import { UserEntity } from '../user/user.entity';
 
-@Table({ modelName: 'comment' })
+@Table({ modelName: 'Comment', freezeTableName: true })
 export class CommentEntity extends BaseEntity {
   @Column({ type: DataType.STRING})
   content: string;
 
-  @HasOne(() => UserEntity)
-  author: UserEntity;
+  @ForeignKey(()=>UserEntity)
+  authorId: string;
 
   @Column({ type: DataType.NUMBER})
   rating: number

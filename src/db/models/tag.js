@@ -24,6 +24,8 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       primaryKey: true
     },
+    createdAt: DataType.DATE,
+    updatedAt: DataType.DATE,
     title: DataType.STRING,
     level: DataTypes.INTEGER,
     isMeta: DataTypes.BOOLEAN,
@@ -39,6 +41,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Tag',
+    freezeTableName: true
   });
   return Tag;
 };

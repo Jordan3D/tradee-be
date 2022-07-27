@@ -24,7 +24,7 @@ import { Request } from 'express';
 import config from '../config';
 import { getToken } from '../util';
 import { TagEntity } from 'src/models';
-import { ICommentFull } from 'src/interfaces/comment.interface';
+import { IComment } from 'src/interfaces/comment.interface';
 
 /**
  * users controller
@@ -43,11 +43,11 @@ export class CommentController {
     let createdEntity;
 
     try {
-      const createData = { ...data, author: '' };
+      const createData = { ...data, authorId: '' };
       const token = getToken(request);
       const payload = jwt.verify(token, config.jwtSecret);
 
-      createData.author = payload.userId;
+      createData.authorId = payload.userId;
 
       createdEntity = await this.commentService.create(createData);
     } catch (e) {
@@ -80,7 +80,7 @@ export class CommentController {
     }
 
     // TODO: check owner by jwt
-    if (payload.userId !== entity.author.id) {
+    if (payload.userId !== entity.authorId) {
       throw new UnauthorizedException('Not allowed to change');
     }
 
@@ -107,7 +107,7 @@ export class CommentController {
     }
 
     // TODO: check author by jwt
-    if (payload.userId !== entity.author.id) {
+    if (payload.userId !== entity.authorId) {
       throw new UnauthorizedException('Not allowed to delete');
     }
 

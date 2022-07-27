@@ -1,14 +1,14 @@
 import { IBase } from 'src/interfaces/base.interface';
-import { ICommentFull } from 'src/interfaces/comment.interface';
+import { IComment } from 'src/interfaces/comment.interface';
 import { IUser } from 'src/interfaces/user';
 
-export class ResponseDto implements ICommentFull {
+export class ResponseDto implements IComment {
   
   id: string;
 
   content: string;
 
-  author: IUser;
+  authorId: string;
 
   parentId: string;
 
@@ -20,7 +20,7 @@ export class ResponseDto implements ICommentFull {
   
   updatedAt: Date;
 
-  constructor(entity: ICommentFull) {
+  constructor(entity: IComment) {
     Object.keys(entity).forEach(key => {
         this[key] = entity[key];
     })

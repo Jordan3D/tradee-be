@@ -1,7 +1,7 @@
 import { Table, Column, DataType, HasMany, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { BaseEntity } from './base.entity';
-import { TagEntity } from './tag.entity';
-import { UserEntity } from './user.entity';
+import { TagEntity } from '../tag/tag.entity';
+import { UserEntity } from '../user/user.entity';
 
 @Table({ modelName: 'idea' })
 export class IdeaEntity extends BaseEntity {

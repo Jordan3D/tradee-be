@@ -7,8 +7,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './user';
 import { TagModule } from './tag';
-import { CommentModule } from './comment/comment.module';
-import { NoteModule } from './note';
+// import { CommentModule } from './comment/comment.module';
+// import { NoteModule } from './note';
 
 @Module({
   imports: [
@@ -24,13 +24,12 @@ import { NoteModule } from './note';
       database: "postgres",
       autoLoadModels: true,
       synchronize: true,
-      
     }),
     AuthModule,
     UsersModule,
     TagModule,
-    CommentModule,
-    NoteModule
+    // CommentModule,
+    // NoteModule
   ],
   controllers: [AppController],
   providers: [AppService],

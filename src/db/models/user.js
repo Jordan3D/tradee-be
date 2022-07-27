@@ -20,6 +20,8 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       primaryKey: true
     },
+    createdAt: DataType.DATE,
+    updatedAt: DataType.DATE,
     username: DataTypes.STRING,
     email: DataTypes.STRING,
     password: DataTypes.STRING,
@@ -27,6 +29,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'User',
+    freezeTableName: true
   });
   return User;
 };

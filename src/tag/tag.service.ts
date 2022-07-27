@@ -17,12 +17,12 @@ export class TagService {
     const parentTag = await this.tagModel.findOne({where: {id: data.parentId}})
     const dataToCreate = {
       ...data, 
-      parent: parentTag ? {id: parentTag.id} : undefined,
-      author: {id: data.authorId},
       level: parentTag ? parentTag.level + 1 : 0
-    };  
+    };
+
+    const tag = new TagEntity(dataToCreate);
     
-    return await this.tagModel.create(dataToCreate);
+    return tag.save();
   }
   
   async getById(id: string, omit?: string[]): Promise<ITag | undefined> {

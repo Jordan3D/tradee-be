@@ -7,9 +7,9 @@ export abstract class BaseEntity extends Model {
     primaryKey: true})
   id: string;
   
-  @Column({type: DataType.TIME})
+  @Column({type: DataType.DATE})
   createdAt: Date;
   
-  @Column({type: DataType.TIME})
+  @Column({type: DataType.DATE})
   updatedAt: Date;
 }

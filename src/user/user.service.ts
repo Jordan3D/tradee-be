@@ -20,10 +20,10 @@ export class UsersService {
   ) {}
 
   async create(data: Omit<IUser, 'id' | 'createdAt' | 'updatedAt' | 'config'>): Promise<UserEntity> {
-    if ( await this.getByEmail(data.email) !== undefined)
+    if (await this.getByEmail(data.email))
       throw new ConflictException('User with provided email already exists');
       
-    if ( await this.getByUsername(data.username) !== undefined)
+    if (await this.getByUsername(data.username))
       throw new ConflictException('User with provided username already exists');
   
     const pHash = await bcrypt.hash(data.password, saltRounds);
@@ -47,8 +47,9 @@ export class UsersService {
    * @param {string} email - user email
    * @returns {Promise<IUser | null>} - user
    */
-  async getByEmail(email: string): Promise<UserEntity | undefined> {
+  async getByEmail(email: string): Promise<UserEntity | null> {
     const user = await this.userModel.findOne({ where: {email} });
+    console.log(user);
     return user;
   }
   
@@ -57,7 +58,7 @@ export class UsersService {
    * @param {string} username
    * @returns {Promise<User | null>} - user
    */
-   async getByUsername(username: string): Promise<UserEntity | undefined> {
+   async getByUsername(username: string): Promise<UserEntity | null> {
     const user = await this.userModel.findOne({ where: {username} });
     return user;
   }
@@ -67,7 +68,7 @@ export class UsersService {
    * @param {string} id - user id
    * @returns {Promise<UserDocument | null>} - user
    */
-  async getById(id: string, omit?: string[]): Promise<UserEntity | undefined> {
+  async getById(id: string, omit?: string[]): Promise<UserEntity | null> {
     const user = await this.userModel.findOne({where: {id}});
     
     if(omit){
@@ -91,7 +92,7 @@ export class UsersService {
    * @param {string} email - user email
    * @returns {Promise<UserDocument | null>} - updated user
    */
-  async update(id: string, updates: Partial<Omit<IUser, 'id' | 'createdAt' | 'updatedAt'>>,): Promise<UserEntity | undefined> {
+  async update(id: string, updates: Partial<Omit<IUser, 'id' | 'createdAt' | 'updatedAt'>>,): Promise<UserEntity | null> {
     try {
       await this.userModel.update(updates, {where: {id}});
     } catch (error) {
