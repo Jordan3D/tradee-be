@@ -42,11 +42,10 @@ export class TagService {
   }
 
   async getAllByAuthor(authorId: string): Promise<ITag[] | undefined> {  
-    const results = await this.tagModel.findAll({
-      where: {author: authorId},
+    return await this.tagModel.findAll({
+      where: {authorId},
       order: [['level','ASC']]
     })
-    return results.map(tag => ({...tag, parent: tag?.parentId, author: tag.authorId}));
   };
 
   async delete(id: string): Promise<boolean> {    

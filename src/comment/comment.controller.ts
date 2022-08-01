@@ -23,8 +23,6 @@ import { CommentService } from './comment.service';
 import { Request } from 'express';
 import config from '../config';
 import { getToken } from '../util';
-import { TagEntity } from 'src/models';
-import { IComment } from 'src/interfaces/comment.interface';
 
 /**
  * users controller
@@ -60,12 +58,12 @@ export class CommentController {
   @UseGuards(AuthGuard('jwt'))
   @Get('/:id')
   async findOne(@Param('id') id: string): Promise<ResponseDto> {
-    const tag = await this.commentService.getById(id);
-    if (tag === undefined) {
-      throw new NotFoundException('Tag not found');
+    const entity = await this.commentService.getById(id);
+    if (entity === undefined) {
+      throw new NotFoundException('Comment not found');
     }
 
-    return new ResponseDto(tag);
+    return new ResponseDto(entity);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -88,6 +86,50 @@ export class CommentController {
 
     try {
       updatedEntity = await this.commentService.update(id, data);
+    } catch (e) {
+      throw new BadRequestException('Something was wrong');
+    }
+
+    return new ResponseDto(updatedEntity);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/:id/rateUp')
+  async rateUp(@Param('id') id: string, @Req() request: Request): Promise<ResponseDto> {
+    const token = getToken(request);
+    const payload = jwt.verify(token, config.jwtSecret);
+
+    const entity = await this.commentService.getById(id);
+    if (entity === undefined) {
+      throw new NotFoundException('Entity not found');
+    }
+
+    let updatedEntity;
+
+    try {
+      updatedEntity = await this.commentService.rateUp(id, payload.userId);
+    } catch (e) {
+      throw new BadRequestException('Something was wrong');
+    }
+
+    return new ResponseDto(updatedEntity);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/:id/rateDown')
+  async rateDown(@Param('id') id: string, @Req() request: Request): Promise<ResponseDto> {
+    const token = getToken(request);
+    const payload = jwt.verify(token, config.jwtSecret);
+
+    const entity = await this.commentService.getById(id);
+    if (entity === undefined) {
+      throw new NotFoundException('Entity not found');
+    }
+
+    let updatedEntity;
+
+    try {
+      updatedEntity = await this.commentService.rateDown(id, payload.userId);
     } catch (e) {
       throw new BadRequestException('Something was wrong');
     }

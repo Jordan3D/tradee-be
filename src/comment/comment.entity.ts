@@ -10,8 +10,8 @@ export class CommentEntity extends BaseEntity {
   @ForeignKey(()=>UserEntity)
   authorId: string;
 
-  @Column({ type: DataType.NUMBER})
-  rating: number
+  @Column({ type: DataType.INTEGER})
+  rating: number;
 
   @Column({ type: DataType.STRING})
   parentId: string;

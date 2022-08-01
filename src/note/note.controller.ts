@@ -10,8 +10,11 @@ import {
   UnauthorizedException,
   UseGuards,
   Req,
+  Query,
   Delete
 } from '@nestjs/common';
+
+import {getUnixTime} from 'date-fns';
 
 
 const jwt = require('jsonwebtoken');
@@ -23,6 +26,7 @@ import { NoteService } from './note.service';
 import { Request } from 'express';
 import config from '../config';
 import { getToken } from '../util';
+import { INoteFull, INote } from 'src/interfaces/note.interface';
 
 /**
  * users controller
@@ -61,10 +65,38 @@ export class NoteController {
   async findOne(@Param('id') id: string): Promise<ResponseDto> {
     const entity = await this.rootService.getById(id);
     if (entity === undefined) {
-      throw new NotFoundException('Tag not found');
+      throw new NotFoundException('Note not found');
     }
 
     return new ResponseDto(entity);
+  }
+
+  // for calendar search
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/dateMap')
+  async findByDate(@Req() request: Request, @Query() query):Promise<Record<string,INote>> {
+    const token = getToken(request);
+    const payload = jwt.verify(token, config.jwtSecret);
+    const {startDate, endDate} = query;
+    const data = await this.rootService.findByDate({startDate, endDate, authorId: payload.userId});
+    let result = {};
+
+    data.forEach(note => {
+      const date = getUnixTime(note.createdAt);
+      result[date] = result[date] ? result[date].push(note) : [];
+    })
+
+    return result;
+  }
+
+  // for input search
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/list')
+  async findByText(@Req() request: Request, @Query() query):Promise<INote[]> {
+    const token = getToken(request);
+    const payload = jwt.verify(token, config.jwtSecret);
+    const {text, limit, lastId} = query;
+    return this.rootService.findBy({text, limit, lastId, authorId: payload.userId})
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -75,7 +107,7 @@ export class NoteController {
 
     const entity = await this.rootService.getById(id);
     if (entity === undefined) {
-      throw new NotFoundException('Entity not found');
+      throw new NotFoundException('Note not found');
     }
 
     // TODO: check owner by jwt
@@ -102,7 +134,7 @@ export class NoteController {
 
     const entity = await this.rootService.getById(id);
     if (entity === undefined) {
-      throw new NotFoundException('Entity not found');
+      throw new NotFoundException('Note not found');
     }
 
     // TODO: check author by jwt

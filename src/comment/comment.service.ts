@@ -51,5 +51,12 @@ export class CommentService {
     });
   }
   
+  async rateUp(id: string, userId: string): Promise<boolean> {
+    return false;
+  }
+
+  async rateDown(id: string, userId: string): Promise<boolean> {
+    return false;
+  }
 
 }

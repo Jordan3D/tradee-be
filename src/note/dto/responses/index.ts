@@ -1,7 +1,9 @@
 import { INote } from 'src/interfaces/note.interface';
+import { ITag } from 'src/interfaces/tag.interface';
 import { UserEntity } from 'src/models';
+import { NoteEntity } from 'src/note/note.entity';
 
-export class ResponseDto implements INote {
+export class ResponseDto implements Partial<NoteEntity> {
   
   id: string;
 
@@ -10,6 +12,8 @@ export class ResponseDto implements INote {
   content: string;
 
   authorId: string;
+
+  settings: any;
 
   tags: string[];
 

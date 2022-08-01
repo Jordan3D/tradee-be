@@ -7,6 +7,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './user';
 import { TagModule } from './tag';
+import { CommentModule } from './comment';
 // import { CommentModule } from './comment/comment.module';
 // import { NoteModule } from './note';
 
@@ -28,7 +29,7 @@ import { TagModule } from './tag';
     AuthModule,
     UsersModule,
     TagModule,
-    // CommentModule,
+    CommentModule,
     // NoteModule
   ],
   controllers: [AppController],

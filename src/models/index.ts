@@ -4,6 +4,7 @@ import {UserEntity} from '../user/user.entity';
 import {TagEntity} from '../tag/tag.entity';
 import {TagsEntity} from '../tags/tags.entity';
 import {CommentEntity} from '../comment/comment.entity';
+import {RateEntity} from './rate.entity';
 
 export {
   BaseEntity,
@@ -11,5 +12,6 @@ export {
   UserEntity,
   TagEntity,
   TagsEntity,
-  CommentEntity
+  CommentEntity,
+  RateEntity
 }

@@ -6,7 +6,4 @@ import {
 export class UpdateBody {
   @IsString()
   content?: string;
-
-  @IsInt()
-  rating?: number;
 }

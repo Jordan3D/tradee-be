@@ -11,8 +11,10 @@ import {
       @InjectModel(TagsEntity) private readonly rootModel: typeof TagsEntity
     ) {}
     
-    async create({parentId, tagIds}: Readonly<{tagIds: string[], parentId: string}>): Promise<TagsEntity[]> {
-      return await this.rootModel.bulkCreate(tagIds.map(item => ({parentId, tag: item, parentType: 'note'})));
+    async create(
+      {parentId, tagIds, parentType}: 
+      Readonly<{tagIds: string[], parentId: string, parentType: 'note' | 'idea'}>): Promise<TagsEntity[]> {
+      return await this.rootModel.bulkCreate(tagIds.map(item => ({parentId, tag: item, parentType})));
     }
     
     async getByParentId(parentId: string): Promise<string[]> {
