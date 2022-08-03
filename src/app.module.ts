@@ -8,6 +8,7 @@ import { AppService } from './app.service';
 import { UsersModule } from './user';
 import { TagModule } from './tag';
 import { CommentModule } from './comment';
+import { NoteModule } from './note';
 // import { CommentModule } from './comment/comment.module';
 // import { NoteModule } from './note';
 
@@ -30,7 +31,7 @@ import { CommentModule } from './comment';
     UsersModule,
     TagModule,
     CommentModule,
-    // NoteModule
+    NoteModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -51,7 +51,7 @@ export class UsersController {
     
     const user = await this.usersService.getById(payload.userId);
     if (user === undefined) {
-      throw new NotFoundException('user not found');
+      throw new NotFoundException('User not found');
     }
     
     return new UserResponseDto(user);

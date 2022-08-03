@@ -6,9 +6,9 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import { UpdateBody } from './dto/requests';
 import { NoteEntity } from 'src/note/note.entity';
-import { INote, INoteCreate, INoteFull } from 'src/interfaces/note.interface';
+import { INote, INoteOverall } from 'src/interfaces/note.interface';
 import { TagsService } from 'src/tags/tags.service';
-import { Op } from 'sequelize/types';
+import { Op } from 'sequelize';
 import { TagsEntity } from 'src/models';
 
 @Injectable()
@@ -20,13 +20,13 @@ export class NoteService {
     private readonly tagsService: TagsService
   ) {}
   
-  async create(data: Omit<INoteCreate, 'id' | 'createdAt' | 'updatedAt' | 'settings'>): Promise<INoteCreate> { 
+  async create(data: Omit<INoteOverall, 'id' | 'createdAt' | 'updatedAt' | 'settings'>): Promise<INoteOverall> { 
     const dataToCreate = {...data, author: {id: data.authorId}}
     const result = await this.rootModel.create(dataToCreate);
 
     let tags = [] as string[];
 
-    if(result && result.id){
+    if(result && result.id && data.tags){
       const tagsList = await this.tagsService.create({tagIds: data.tags, parentId: result.id, parentType: 'note'});
       tags = tagsList.map((tL : TagsEntity) => tL.tagId);
     }
@@ -63,12 +63,12 @@ export class NoteService {
     return !!res;
   }
 
-  async update(id: string, updates: Omit<UpdateBody, 'id' | 'createdAt' | 'updatedAt' | 'author'>): Promise<INote | undefined> {
+  async update(id: string, updates: Omit<UpdateBody, 'id' | 'createdAt' | 'updatedAt' | 'author'>): Promise<INoteOverall | undefined> {
     try {
       await this.rootModel.update(updates, {where: {id}});
 
       if(updates.tagsAdded){
-        this.tagsService.create({parentId: id, tagIds: updates.tagsAdded});
+        this.tagsService.create({parentId: id, tagIds: updates.tagsAdded, parentType: 'note'});
       }
       if(updates.tagsDeleted){
         this.tagsService.delete({parentId: id, tagIds: updates.tagsDeleted});
@@ -95,12 +95,15 @@ export class NoteService {
     {text, authorId, lastId, limit}: 
     Readonly<{text?: string, authorId: string, limit?: number, lastId?: string}>
     ): Promise<INote[]> {
+      const title = text ? { [Op.like]: '%' + text + '%'} : {};
+      const id = lastId ? {$gt: lastId} : {};
     return await this.rootModel.findAll({
       where: {
         authorId, 
-        title: { [Op.like]: '%' + text + '%'},
-        id: {$gt: lastId}, order: [['createdAt', 'ASC']]
-      }
+        ...title,
+        ...id
+      },
+      order: [['createdAt', 'ASC']]
     });
   }
 }

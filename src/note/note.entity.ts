@@ -1,5 +1,5 @@
-import { Table, Column, DataType, ForeignKey, HasMany } from 'sequelize-typescript';
-import { TagEntity } from 'src/models';
+import { Table, Column, DataType, ForeignKey, HasMany, BelongsTo } from 'sequelize-typescript';
+import { TagEntity, TagsEntity } from 'src/models';
 import { BaseEntity } from '../models/base.entity';
 import { UserEntity } from '../user/user.entity';
 
@@ -14,9 +14,9 @@ export class NoteEntity extends BaseEntity {
   @ForeignKey(() => UserEntity)
   authorId: string;
 
+  @BelongsTo(() => UserEntity)
+  author: UserEntity
+
   @Column({ type: DataType.JSONB})
   settings: any
-
-  @HasMany(() => TagEntity)
-  tags: TagEntity[];
 }

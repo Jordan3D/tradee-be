@@ -5,7 +5,7 @@ export interface INoteSettings {
   color: string;
 }
 
-export interface INoteCreate extends INote{
+export interface INoteOverall extends INote{
   tags: string[];
 }
 

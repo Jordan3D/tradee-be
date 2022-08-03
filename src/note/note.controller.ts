@@ -26,7 +26,7 @@ import { NoteService } from './note.service';
 import { Request } from 'express';
 import config from '../config';
 import { getToken } from '../util';
-import { INoteFull, INote } from 'src/interfaces/note.interface';
+import { INote } from 'src/interfaces/note.interface';
 
 /**
  * users controller
@@ -60,17 +60,6 @@ export class NoteController {
     return new ResponseDto(createdEntity);
   }
 
-  @UseGuards(AuthGuard('jwt'))
-  @Get('/:id')
-  async findOne(@Param('id') id: string): Promise<ResponseDto> {
-    const entity = await this.rootService.getById(id);
-    if (entity === undefined) {
-      throw new NotFoundException('Note not found');
-    }
-
-    return new ResponseDto(entity);
-  }
-
   // for calendar search
   @UseGuards(AuthGuard('jwt'))
   @Get('/dateMap')
@@ -97,6 +86,17 @@ export class NoteController {
     const payload = jwt.verify(token, config.jwtSecret);
     const {text, limit, lastId} = query;
     return this.rootService.findBy({text, limit, lastId, authorId: payload.userId})
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/:id')
+  async findOne(@Param('id') id: string): Promise<ResponseDto> {
+    const entity = await this.rootService.getById(id);
+    if (entity === undefined) {
+      throw new NotFoundException('Note not found');
+    }
+
+    return new ResponseDto(entity);
   }
 
   @UseGuards(AuthGuard('jwt'))

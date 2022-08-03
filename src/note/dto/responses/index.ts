@@ -3,7 +3,7 @@ import { ITag } from 'src/interfaces/tag.interface';
 import { UserEntity } from 'src/models';
 import { NoteEntity } from 'src/note/note.entity';
 
-export class ResponseDto implements Partial<NoteEntity> {
+export class ResponseDto implements INote {
   
   id: string;
 
