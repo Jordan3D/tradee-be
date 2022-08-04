@@ -38,7 +38,7 @@ export class UsersService {
     dataToCreate.password = pHash;
     dataToCreate.config = {utc: 3}; 
     
-    return await this.userModel.create(dataToCreate);
+    return await this.userModel.create(dataToCreate, {raw: true});
   }
   
   
@@ -48,8 +48,7 @@ export class UsersService {
    * @returns {Promise<IUser | null>} - user
    */
   async getByEmail(email: string): Promise<UserEntity | null> {
-    const user = await this.userModel.findOne({ where: {email} });
-    console.log(user);
+    const user = await this.userModel.findOne({ where: {email}, raw: true });
     return user;
   }
   
@@ -59,7 +58,7 @@ export class UsersService {
    * @returns {Promise<User | null>} - user
    */
    async getByUsername(username: string): Promise<UserEntity | null> {
-    const user = await this.userModel.findOne({ where: {username} });
+    const user = await this.userModel.findOne({ where: {username}, raw: true });
     return user;
   }
 
@@ -69,7 +68,7 @@ export class UsersService {
    * @returns {Promise<UserDocument | null>} - user
    */
   async getById(id: string, omit?: string[]): Promise<UserEntity | null> {
-    const user = await this.userModel.findOne({where: {id}});
+    const user = await this.userModel.findOne({where: {id}, raw: true});
     
     if(omit){
       omit.forEach(o => {

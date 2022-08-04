@@ -9,7 +9,6 @@
 //     const ip = client._socket.remoteAddress;
 //     const key = this.generateKey(context, ip);
 //
-//     console.log(`WS IP ${ip}`);
 //     const ttls = await this.storageService.getRecord(key);
 //
 //     if (ttls.length >= limit) {

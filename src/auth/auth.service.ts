@@ -63,7 +63,7 @@ export class AuthService {
     }
     
     const access_token = await this.generateAccessToken(userId);
-    const { id: refreshTokenId, token: refresh_token } = await this.generateRefreshToken();
+    const { id: refreshTokenId, token: refresh_token } = await this.generateRefreshToken(userId);
     
     await this.tokenModel.create({ tokenId: refreshTokenId, userId });
     
@@ -96,14 +96,14 @@ export class AuthService {
    *  generateRefreshToken
    * @returns {id: string, token: string} - refreshtoken and id
    */
-  async generateRefreshToken() {
+  async generateRefreshToken(userId: string) {
     const payload = {
       id: uuid.v4(),
       type: config.jwt.tokens.refresh.type
     };
     const token = jwt.sign(
       {
-        userId: payload.id,
+        userId,
         type: payload.type
       },
       config.jwtSecret,
@@ -116,12 +116,12 @@ export class AuthService {
   }
   /**
    *  replaceDbRefreshToken
-   * @param {string} tokenId- tocken id
+   * @param {string} tokenId- token id
    * @param {string} userId- userId
    * @returns {DbTokenDto} - replaced refreshTocken
    */
   async replaceDbRefreshToken(tokenId, userId): Promise<DbTokenDto> {
-    const token = await this.tokenModel.findOne({where: {id: userId}});
+    const token = await this.tokenModel.findOne({where: {userId}});
     if (!token) {
       throw new NotFoundException('Token is not found');
     } else {
@@ -147,7 +147,7 @@ export class AuthService {
    */
   async updateTokens(userId: string ): Promise<RefreshTokenResponseDto> {
     const accessToken = await this.generateAccessToken(userId);
-    const refreshToken = await this.generateRefreshToken();
+    const refreshToken = await this.generateRefreshToken(userId);
     
     await this.replaceDbRefreshToken(refreshToken.id, userId);
     
@@ -169,7 +169,7 @@ export class AuthService {
       if (payload.type !== 'refresh') {
         throw new NotFoundException('type is not access');
       } else {
-        const token = await this.tokenModel.findOne({where: {tokenId: payload.userId}});
+        const token = await this.tokenModel.findOne({where: {userId: payload.userId}, raw: true});
         if (!token) {
           throw new HttpException('token was not found', HttpStatus.NOT_FOUND);
         }

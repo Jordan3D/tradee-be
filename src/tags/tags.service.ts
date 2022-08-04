@@ -18,7 +18,7 @@ import {
     }
     
     async getByParentId(parentId: string): Promise<string[]> {
-      const result = await this.rootModel.findAll({where: {parentId}});
+      const result = await this.rootModel.findAll({where: {parentId}, raw: true});
       
       return result ? result.map(item => item.tagId) : [];
     }

@@ -53,7 +53,6 @@ export class NoteController {
 
       createdEntity = await this.rootService.create(createData);
     } catch (e) {
-      console.log(e);
       throw new BadRequestException('Something was wrong');
     }
 

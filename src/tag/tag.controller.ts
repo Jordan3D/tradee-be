@@ -44,8 +44,6 @@ export class TagController {
     createData.authorId = payload.userId;
     createData.parentId = createData.parentId ?? null;
 
-    console.log(createData);
-
     try {
       created = await this.tagService.create(createData);
     } catch(e) {

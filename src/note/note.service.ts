@@ -22,7 +22,7 @@ export class NoteService {
   
   async create(data: Omit<INoteOverall, 'id' | 'createdAt' | 'updatedAt' | 'settings'>): Promise<INoteOverall> { 
     const dataToCreate = {...data, author: {id: data.authorId}}
-    const result = await this.rootModel.create(dataToCreate);
+    const result = (await this.rootModel.create(dataToCreate)).toJSON();
 
     let tags = [] as string[];
 
@@ -36,7 +36,8 @@ export class NoteService {
   
   async getById(id: string, omit?: string[]): Promise<INote | undefined> {
     const findedOne = await this.rootModel.findOne({
-      where: {id}
+      where: {id},
+      raw: true
     });
 
     const result = findedOne ? {...findedOne, tags: []} : undefined;
@@ -78,7 +79,8 @@ export class NoteService {
     }
 
     const one = await this.rootModel.findOne({
-      where: {id}
+      where: {id},
+      raw: true
     });
 
     return {...one, tags: await this.tagsService.getByParentId(id)}

@@ -14,7 +14,7 @@ export class TagService {
   ) {}
   
   async create(data: Omit<ITag, 'id' | 'createdAt' | 'updatedAt' | 'level'>): Promise<TagEntity> {
-    const parentTag = await this.tagModel.findOne({where: {id: data.parentId}})
+    const parentTag = await this.tagModel.findOne({where: {id: data.parentId}, raw: true})
     const dataToCreate = {
       ...data, 
       level: parentTag ? parentTag.level + 1 : 0
@@ -27,7 +27,8 @@ export class TagService {
   
   async getById(id: string, omit?: string[]): Promise<ITag | undefined> {
     const foundOne = await this.tagModel.findOne({
-      where: {id}
+      where: {id},
+      raw: true
     });
     
     if(omit){
@@ -58,7 +59,7 @@ export class TagService {
     let parent = undefined;
 
     if(updates.parentId){
-      parent = await this.tagModel.findOne({where: {id: updates.parentId}})
+      parent = await this.tagModel.findOne({where: {id: updates.parentId}, raw: true})
     }
 
     Object.keys(updates).forEach(key => {
@@ -75,7 +76,8 @@ export class TagService {
       return error;
     }
     return this.tagModel.findOne({
-      where: {id}
+      where: {id},
+      raw: true
     });
   }
   

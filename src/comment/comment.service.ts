@@ -21,7 +21,8 @@ export class CommentService {
   
   async getById(id: string, omit?: string[]): Promise<IComment | undefined> {
     const findedOne = await this.commentModel.findOne({
-      where: {id}
+      where: {id},
+      raw: true
     });
     
     if(omit){
@@ -47,7 +48,8 @@ export class CommentService {
       return error;
     }
     return this.commentModel.findOne({
-      where: {id}
+      where: {id},
+      raw: true
     });
   }
   
