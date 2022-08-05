@@ -14,7 +14,10 @@ import {
     async create(
       {parentId, tagIds, parentType}: 
       Readonly<{tagIds: string[], parentId: string, parentType: 'note' | 'idea'}>): Promise<TagsEntity[]> {
-      return await this.rootModel.bulkCreate(tagIds.map(item => ({parentId, tag: item, parentType})));
+      const result =  await this.rootModel.bulkCreate(tagIds.map(item => ({parentId, tagId: item, parentType})));
+      console.log('tags');
+      console.log(result);
+      return result.map(item => item.toJSON())
     }
     
     async getByParentId(parentId: string): Promise<string[]> {
@@ -24,7 +27,7 @@ import {
     }
   
     async delete({parentId, tagIds}: Readonly<{tagIds: string[], parentId: string}>): Promise<boolean> {
-      const res = await this.rootModel.destroy({where: {parentId, tag: tagIds}});
+      const res = await this.rootModel.destroy({where: {parentId, tagId: tagIds}});
       
       return !!res;
     }

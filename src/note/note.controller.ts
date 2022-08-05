@@ -43,7 +43,7 @@ export class NoteController {
     @Req() request: Request
   ): Promise<ResponseDto> {
     let createdEntity;
-
+    
     try {
       const createData = { ...data, authorId: '' };
       const token = getToken(request);
@@ -51,9 +51,11 @@ export class NoteController {
 
       createData.authorId = payload.userId;
 
+      console.log(createData);
+
       createdEntity = await this.rootService.create(createData);
     } catch (e) {
-      throw new BadRequestException('Something was wrong');
+      throw new BadRequestException(e);
     }
 
     return new ResponseDto(createdEntity);
@@ -119,7 +121,7 @@ export class NoteController {
     try {
       updatedEntity = await this.rootService.update(id, data);
     } catch (e) {
-      throw new BadRequestException('Something was wrong');
+      throw new BadRequestException(e);
     }
 
     return new ResponseDto(updatedEntity);

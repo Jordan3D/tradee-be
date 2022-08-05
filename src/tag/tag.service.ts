@@ -21,8 +21,9 @@ export class TagService {
     };
 
     const tag = new TagEntity(dataToCreate);
-    
-    return tag.save();
+    await tag.save();
+
+    return tag.toJSON();
   }
   
   async getById(id: string, omit?: string[]): Promise<ITag | undefined> {
@@ -55,7 +56,7 @@ export class TagService {
 
   async update(id: string, updates: Omit<UpdateBody, 'id' | 'createdAt' | 'updatedAt' >): Promise<TagEntity | undefined> {
 
-    const dataToUpdate = {};
+    const dataToUpdate = {} as ITag;
     let parent = undefined;
 
     if(updates.parentId){
@@ -63,8 +64,9 @@ export class TagService {
     }
 
     Object.keys(updates).forEach(key => {
-      if(['parent'].includes(key)){
-        dataToUpdate[key] = {id: updates[key], level: parent.level}
+      if(key === 'parentId'){
+        dataToUpdate[key] = updates[key],
+        dataToUpdate.level = parent.level + 1;
       } else {
         dataToUpdate[key] = updates[key];
       }

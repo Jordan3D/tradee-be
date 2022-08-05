@@ -8,7 +8,7 @@ import { UpdateBody } from './dto/requests';
 import { NoteEntity } from 'src/note/note.entity';
 import { INote, INoteOverall } from 'src/interfaces/note.interface';
 import { TagsService } from 'src/tags/tags.service';
-import { Op } from 'sequelize';
+import { Op, QueryTypes } from 'sequelize';
 import { TagsEntity } from 'src/models';
 
 @Injectable()
@@ -28,7 +28,8 @@ export class NoteService {
 
     if(result && result.id && data.tags){
       const tagsList = await this.tagsService.create({tagIds: data.tags, parentId: result.id, parentType: 'note'});
-      tags = tagsList.map((tL : TagsEntity) => tL.tagId);
+      console.log(tagsList)
+      tags = tagsList.map((tL : TagsEntity) => tL.tagId) || [];
     }
     
     return {...result, tags};
@@ -69,10 +70,10 @@ export class NoteService {
       await this.rootModel.update(updates, {where: {id}});
 
       if(updates.tagsAdded){
-        this.tagsService.create({parentId: id, tagIds: updates.tagsAdded, parentType: 'note'});
+        await this.tagsService.create({parentId: id, tagIds: updates.tagsAdded, parentType: 'note'});
       }
       if(updates.tagsDeleted){
-        this.tagsService.delete({parentId: id, tagIds: updates.tagsDeleted});
+        await this.tagsService.delete({parentId: id, tagIds: updates.tagsDeleted});
       }
     } catch (error) {
       return error;
@@ -97,15 +98,19 @@ export class NoteService {
     {text, authorId, lastId, limit}: 
     Readonly<{text?: string, authorId: string, limit?: number, lastId?: string}>
     ): Promise<INote[]> {
-      const title = text ? { [Op.like]: '%' + text + '%'} : {};
       const id = lastId ? {$gt: lastId} : {};
-    return await this.rootModel.findAll({
-      where: {
-        authorId, 
-        ...title,
-        ...id
-      },
-      order: [['createdAt', 'ASC']]
-    });
+      return await this.rootModel.sequelize.query(
+        `SELECT *  FROM "Note" note,
+        LATERAL (
+           SELECT ARRAY (
+              SELECT "tagId"
+              FROM   "Tags" tags
+              WHERE  tags."parentId" = note.id
+              ) AS tags
+           ) t
+        WHERE "authorId"='${authorId}'
+        ORDER BY "createdAt" ASC`,
+         { type: QueryTypes.SELECT }
+        );
   }
 }

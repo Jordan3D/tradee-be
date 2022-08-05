@@ -1,4 +1,4 @@
-import { Table, Column, DataType, ForeignKey, Model} from 'sequelize-typescript';
+import { Table, Column, DataType, ForeignKey, Model, BelongsTo} from 'sequelize-typescript';
 import { TagEntity } from '../tag/tag.entity';
 
 @Table({ modelName: 'Tags', freezeTableName: true } )
@@ -11,6 +11,9 @@ export class TagsEntity extends Model{
 
   @ForeignKey(() => TagEntity)
   tagId: string;
+
+  @BelongsTo(() => TagEntity)
+  tag: TagEntity
 
   @Column({type: DataType.UUID})
   parentId: string;
