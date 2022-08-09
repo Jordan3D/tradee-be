@@ -1,6 +1,6 @@
-import { INote } from 'src/interfaces/note.interface';
+import { IIdea } from 'src/interfaces/idea.interface';
 
-export class ResponseDto implements INote {
+export class ResponseDto implements IIdea {
   
   id: string;
 
@@ -14,13 +14,15 @@ export class ResponseDto implements INote {
 
   tags: string[];
 
+  comments: string[];
+
   rating: number;
   
   createdAt: Date;
   
   updatedAt: Date;
 
-  constructor(entity: INote) {
+  constructor(entity: IIdea) {
     Object.keys(entity).forEach(key => {
         this[key] = entity[key];
     })

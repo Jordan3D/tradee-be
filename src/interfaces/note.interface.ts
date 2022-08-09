@@ -7,6 +7,7 @@ export interface INoteSettings {
 
 export interface INoteOverall extends INote{
   tags: string[];
+   // comments: string[];
 }
 
 export interface INoteFull extends IBase{

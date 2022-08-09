@@ -9,6 +9,9 @@ import { UsersModule } from './user';
 import { TagModule } from './tag';
 import { CommentModule } from './comment';
 import { NoteModule } from './note';
+import { TradeModule } from './trade';
+import { PairModule } from './pair';
+import { NotesModule } from './notes';
 // import { CommentModule } from './comment/comment.module';
 // import { NoteModule } from './note';
 
@@ -31,7 +34,10 @@ import { NoteModule } from './note';
     UsersModule,
     TagModule,
     CommentModule,
-    NoteModule
+    NoteModule,
+    TradeModule,
+    PairModule,
+    NotesModule
   ],
   controllers: [AppController],
   providers: [AppService],

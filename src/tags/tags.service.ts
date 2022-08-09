@@ -13,7 +13,7 @@ import {
     
     async create(
       {parentId, tagIds, parentType}: 
-      Readonly<{tagIds: string[], parentId: string, parentType: 'note' | 'idea'}>): Promise<TagsEntity[]> {
+      Readonly<{tagIds: string[], parentId: string, parentType: 'note' | 'idea' | 'trade'}>): Promise<TagsEntity[]> {
       const result =  await this.rootModel.bulkCreate(tagIds.map(item => ({parentId, tagId: item, parentType})));
       console.log('tags');
       console.log(result);

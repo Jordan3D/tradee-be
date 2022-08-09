@@ -1,23 +1,23 @@
 import { Table, Column, DataType, ForeignKey, Model, BelongsTo} from 'sequelize-typescript';
-import { TagEntity } from '../tag/tag.entity';
+import { NoteEntity } from 'src/note/note.entity';
 
-@Table({ modelName: 'Tags', freezeTableName: true } )
-export class TagsEntity extends Model{
+@Table({ modelName: 'Notes', freezeTableName: true })
+export class NotesEntity extends Model{
   @Column({  type: DataType.UUID,
     defaultValue: DataType.UUIDV4,
     allowNull: false,
     primaryKey: true})
   id: string;
 
-  @ForeignKey(() => TagEntity)
-  tagId: string;
+  @ForeignKey(() => NotesEntity)
+  noteId: string;
 
-  @BelongsTo(() => TagEntity)
-  tag: TagEntity
+  @BelongsTo(() => NoteEntity)
+  note: NoteEntity
 
   @Column({type: DataType.UUID})
   parentId: string;
 
   @Column({ type: 'varchar'})
-  parentType: 'note' | 'idea' | 'trade'
+  parentType: 'trade' | 'idea'
 }
