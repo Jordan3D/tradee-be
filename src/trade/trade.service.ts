@@ -8,9 +8,10 @@ import { UpdateBody } from './dto/requests';
 import { TagsService } from 'src/tags/tags.service';
 import { QueryTypes } from 'sequelize';
 import { TagsEntity } from 'src/models';
-import { ITrade, ITradeOverall } from 'src/interfaces/trade.interface';
+import { ITrade, ITradeOverall, TradeByBit } from 'src/interfaces/trade.interface';
 import { NotesService } from 'src/notes';
 import { TradeEntity } from './trade.entity';
+import { CreateBody } from 'src/tag/dto/requests';
 
 @Injectable()
 export class TradeService {
@@ -36,6 +37,15 @@ export class TradeService {
     }
 
     return { ...result, tags };
+  }
+
+  async createMultiple(data: Omit<ITradeOverall, 'id' | 'createdAt' | 'updatedAt'>[]): Promise<ITrade[]>{
+    try {
+      const result = await this.rootModel.bulkCreate(data);
+      return result.map(item => item.toJSON())
+    }catch(e){
+      console.log(e);
+    }
   }
 
   async getById(id: string, omit?: string[]): Promise<ITrade | undefined> {
@@ -109,28 +119,41 @@ export class TradeService {
   }
 
   async findBy(
-    { pairId, authorId }:
-      Readonly<{ pairId?: string, authorId: string }>
-  ): Promise<ITrade[]> {
-    return await this.rootModel.sequelize.query(
-      `SELECT *  FROM "Note" note,
+    { pairId, limit, offset, authorId }:
+      Readonly<{ pairId?: string, limit?: number, offset?: number, authorId: string }>
+  ): Promise<Readonly<{
+    data: ITradeOverall[], total: number, offset: number, limit: number
+  }>> {
+    const data = (await this.rootModel.sequelize.query(
+      `SELECT *  FROM "Trade" trade,
         LATERAL (
            SELECT ARRAY (
               SELECT "tagId"
               FROM   "Tags" tags
-              WHERE  tags."parentId" = note.id
+              WHERE  tags."parentId" = trade.id
               ) AS tags
            ) t,
            LATERAL (
             SELECT ARRAY (
                SELECT "noteId"
                FROM   "Notes" notes
-               WHERE  notes."parentId" = note.id
+               WHERE  notes."parentId" = trade.id
                ) AS notes
             ) n
         WHERE "authorId"='${authorId}' ${!pairId ? '' : 'AND "pairId"=\'' + pairId + '\''}
-        ORDER BY "createdAt" ASC`,
+        ORDER BY "createdAt" ASC
+        ${limit ? 'LIMIT '+ limit : ''}
+        ${offset ? 'OFFSET '+ offset : ''}
+        `,
       { type: QueryTypes.SELECT }
-    );
+    )) as ITradeOverall[];
+    const total = await this.rootModel.count({where:{authorId}});
+
+    return {
+      data,
+      total,
+      offset,
+      limit
+    }
   }
 }

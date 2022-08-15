@@ -1,4 +1,17 @@
 import { Request } from 'express';
+import { LinearClient } from 'bybit-api';
+import { getUnixTime } from 'date-fns';
+import { PairEntity } from 'src/pair/pair.entity';
+import { ITrade, ITradeOverall, TradeByBit } from 'src/interfaces/trade.interface';
+const fs = require('fs');
+
+import {CreateBody} from '../trade/dto/requests/create';
+import { IPair } from 'src/interfaces/pair.interface';
+
+const restClientOptions = {
+  recv_window: 4000
+};
+
 
 export const getToken = (req: Request) => {
   if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') { // Authorization: Bearer g1jipjgi1ifjioj
@@ -29,13 +42,13 @@ export const generateRandomNumber = (from, to) => {
 
 export const rollDice = count => {
   const res = [];
-  for(let i = 0; i< count; i++){
+  for (let i = 0; i < count; i++) {
     res.push(generateRandomNumber(1, 6));
   }
   return res;
 };
 
-export const Timer = ({value, onEnd, onTick, pause}) => {
+export const Timer = ({ value, onEnd, onTick, pause }) => {
   const data = {
     value,
     t: null,
@@ -43,9 +56,9 @@ export const Timer = ({value, onEnd, onTick, pause}) => {
     onTick,
     onEnd
   };
-  
+
   return {
-    tick: function(){
+    tick: function () {
       if (data.value > 0 && !data.pause) {
         data.t = setTimeout(() => {
           data.value -= 1;
@@ -58,15 +71,15 @@ export const Timer = ({value, onEnd, onTick, pause}) => {
         }
       }
     },
-    set: function(args){
+    set: function (args) {
       Object.keys(args).forEach(k => {
         data[k] = args[k];
       })
     },
-    clear: function() {
+    clear: function () {
       clearTimeout(data.t);
     },
-    init: function(value) {
+    init: function (value) {
       clearTimeout(data.t);
       data.value = value;
       this.tick();
@@ -76,3 +89,39 @@ export const Timer = ({value, onEnd, onTick, pause}) => {
 
 
 export const dataExpire = Number.isNaN(Number(process.env.DATA_EXPIRE)) ? 172800 : Number(process.env.DATA_EXPIRE);
+
+
+export type GetDataFromBrokerProps = {
+  dir: string,
+  api_key: string,
+  secret_key: string,
+  url: string
+  signature: string,
+  pairs: PairEntity[]
+}
+
+export type LogItem = {
+  pairId: string,
+  
+}
+
+export const transformIntoTradeCreate =(
+  trade: TradeByBit,
+  pair: IPair,
+  authorId: string
+):Omit<ITradeOverall , 'id' | 'createdAt' | 'updatedAt'>  => ({
+  pairId: pair.id,
+  action: trade.side,
+  dateOpen: new Date(trade.created_at * 1000),
+  dateClose: null,
+  close: trade.closed_size,
+  open: trade.qty,
+  orderType: trade.order_type,
+  leverage: trade.leverage,
+  pnl: trade.closed_pnl,
+  isManual: false,
+  authorId,
+  fee: 0,
+  tags: [],
+  notes: []
+})

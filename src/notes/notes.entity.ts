@@ -9,11 +9,11 @@ export class NotesEntity extends Model{
     primaryKey: true})
   id: string;
 
-  @ForeignKey(() => NotesEntity)
+  @ForeignKey(() => NoteEntity)
   noteId: string;
 
   @BelongsTo(() => NoteEntity)
-  note: NoteEntity
+  note: NoteEntity;
 
   @Column({type: DataType.UUID})
   parentId: string;

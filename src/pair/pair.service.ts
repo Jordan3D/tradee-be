@@ -25,7 +25,7 @@ export class PairService {
       raw: true
     });
 
-    const result = findedOne ? {...findedOne, tags: []} : undefined;
+    const result = findedOne ? {...findedOne} : undefined;
      
     if(omit){
       omit.forEach(o => {

@@ -1,4 +1,4 @@
-import { Table, Column, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { Table, Column, DataType, ForeignKey, BelongsTo, Sequelize } from 'sequelize-typescript';
 import { PairEntity } from 'src/pair/pair.entity';
 import { BaseEntity } from '../models/base.entity';
 import { UserEntity } from '../user/user.entity';
@@ -9,29 +9,41 @@ export class TradeEntity extends BaseEntity {
   pairId: string;
 
   @BelongsTo(() => PairEntity)
-  pair: PairEntity
+  pair: PairEntity;
 
   @ForeignKey(() => UserEntity)
   authorId: string;
 
   @BelongsTo(() => UserEntity)
-  author: UserEntity
+  author: UserEntity;
 
   @Column({ type: DataType.STRING })
   action: string;
 
-  @Column({ type: DataType.NUMBER })
+  @Column({ type: DataType.FLOAT })
   open: number;
 
-  @Column({ type: DataType.DATE })
-  dateOpen: string;
+  @Column({ defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"), })
+  dateOpen: Date;
 
-  @Column({ type: DataType.NUMBER })
+  @Column({ type: DataType.FLOAT })
   close: number;
 
-  @Column({ type: DataType.DATE })
-  dateClose: string;
+  @Column({ type: DataType.FLOAT })
+  leverage: number;
 
-  @Column({ type: DataType.NUMBER })
+  @Column({ defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"), })
+  dateClose: Date;
+
+  @Column({ type: DataType.FLOAT })
   fee: number;
+
+  @Column({ type: DataType.FLOAT })
+  pnl: number;
+
+  @Column({ type: DataType.STRING})
+  orderType: string;
+
+  @Column({ type: DataType.BOOLEAN })
+  isManual: boolean;
 }

@@ -14,26 +14,25 @@ import {
   Delete
 } from '@nestjs/common';
 
-import {getUnixTime} from 'date-fns';
-
 
 const jwt = require('jsonwebtoken');
 
 import { AuthGuard } from '@nestjs/passport';
-import { CreateBody, UpdateBody } from './dto/requests';
+import { CreateBody, SyncBody, UpdateBody } from './dto/requests';
 import { ResponseDto } from './dto/responses';
 import { Request } from 'express';
 import config from '../config';
 import { getToken } from '../util';
-import { ITrade, ITradeOverall } from 'src/interfaces/trade.interface';
-import { TradeService } from './trade.service';
+import { ITrade } from 'src/interfaces/trade.interface';
+import { BrokerService } from './broker.service';
+import { BrokerTypeEnum, IBroker } from 'src/interfaces/broker.interface';
 
 
-@Controller('/trade')
-export class TradeController {
+@Controller('/broker')
+export class BrokerController {
 
-  private readonly logger = new Logger(TradeController.name);
-  constructor(private readonly rootService: TradeService) { }
+  private readonly logger = new Logger(BrokerController.name);
+  constructor(private readonly rootService: BrokerService) { }
 
   @Post('/create')
   async create(
@@ -43,7 +42,7 @@ export class TradeController {
     let createdEntity;
     
     try {
-      const createData = { ...data, authorId: '', isManual: true };
+      const createData = { ...data, authorId: '' };
       const token = getToken(request);
       const payload = jwt.verify(token, config.jwtSecret);
 
@@ -57,33 +56,32 @@ export class TradeController {
     return new ResponseDto(createdEntity);
   }
 
-  // for calendar search
-  @UseGuards(AuthGuard('jwt'))
-  @Get('/dateMap')
-  async findByDate(@Req() request: Request, @Query() query):Promise<Record<string,ITrade>> {
-    const token = getToken(request);
-    const payload = jwt.verify(token, config.jwtSecret);
-    const {startDate, endDate} = query;
-    const data = await this.rootService.findByDate({startDate, endDate, authorId: payload.userId});
-    let result = {};
-
-    data.forEach(note => {
-      const date = getUnixTime(note.createdAt);
-      result[date] = result[date] ? result[date].push(note) : [];
-    })
-
-    return result;
-  }
-
   // for input search
   @UseGuards(AuthGuard('jwt'))
   @Get('/list')
-  async findBy(@Req() request: Request, @Query() query):Promise<Readonly<{
-    data: ITradeOverall[], total: number, offset: number, limit: number
-  }>> {
+  async findBy(@Req() request: Request, @Query() query):Promise<IBroker[]> {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
-    return this.rootService.findBy({...query, authorId: payload.userId})
+    const {pairId} = query;
+    return this.rootService.list(payload.userId)
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/sync')
+  async sync(@Body() data: SyncBody, @Req() request: Request): Promise<boolean>{
+    const token = getToken(request);
+    const payload = jwt.verify(token, config.jwtSecret);
+    
+    const {broker} = data;
+
+    this.rootService.sync(broker, payload.userId);
+
+    return true;
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/broker-types')
+  async brokerTypes(): Promise<string[]> {
+    return Object.keys(BrokerTypeEnum);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -91,7 +89,7 @@ export class TradeController {
   async findOne(@Param('id') id: string): Promise<ResponseDto> {
     const entity = await this.rootService.getById(id);
     if (entity === undefined) {
-      throw new NotFoundException('Trade not found');
+      throw new NotFoundException('Broker not found');
     }
 
     return new ResponseDto(entity);
@@ -105,7 +103,7 @@ export class TradeController {
 
     const entity = await this.rootService.getById(id);
     if (entity === undefined) {
-      throw new NotFoundException('Trade not found');
+      throw new NotFoundException('Broker not found');
     }
 
     // TODO: check owner by jwt

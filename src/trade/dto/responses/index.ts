@@ -4,15 +4,15 @@ export class ResponseDto implements ITrade {
   
   id: string;
 
-  pair: string;
+  pairId: string;
 
   action: string;
 
-  dateOpen: string;
+  dateOpen: Date;
 
   open: number;
 
-  dateClose?: string;
+  dateClose?: Date;
 
   close?: number;
 
@@ -27,6 +27,14 @@ export class ResponseDto implements ITrade {
   createdAt: Date;
   
   updatedAt: Date;
+
+  leverage : number;
+
+  pnl: number;
+
+  orderType: string;
+
+  isManual: boolean;
 
   constructor(entity: ITrade) {
     Object.keys(entity).forEach(key => {

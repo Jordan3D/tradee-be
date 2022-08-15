@@ -2,7 +2,9 @@ import {
   IsString,
   IsOptional,
   IsNumber,
-  IsArray
+  IsArray,
+  IsBoolean,
+  IsDate
 } from 'class-validator';
 
 export class CreateBody {  
@@ -12,15 +14,15 @@ export class CreateBody {
   @IsString()
   action: string;
 
-  @IsString()
-  dateOpen: string;
+  @IsDate()
+  dateOpen: Date;
 
   @IsNumber()
   open: number;
 
-  @IsString()
+  @IsDate()
   @IsOptional()
-  dateClose: string;
+  dateClose: Date;
 
   @IsNumber()
   @IsOptional()
@@ -29,6 +31,15 @@ export class CreateBody {
   @IsNumber()
   @IsOptional()
   fee: number;
+
+  @IsString()
+  orderType: string;
+
+  @IsNumber()
+  leverage: number;
+
+  @IsNumber()
+  pnl: number;
   
   @IsArray()
   @IsOptional()
@@ -37,4 +48,8 @@ export class CreateBody {
   @IsArray()
   @IsOptional()
   notes: string[];
+
+  @IsBoolean()
+  @IsOptional()
+  isManual: boolean;
 }

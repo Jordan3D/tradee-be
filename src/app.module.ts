@@ -12,8 +12,7 @@ import { NoteModule } from './note';
 import { TradeModule } from './trade';
 import { PairModule } from './pair';
 import { NotesModule } from './notes';
-// import { CommentModule } from './comment/comment.module';
-// import { NoteModule } from './note';
+import { BrokerModule } from './broker';
 
 @Module({
   imports: [
@@ -35,9 +34,10 @@ import { NotesModule } from './notes';
     TagModule,
     CommentModule,
     NoteModule,
-    TradeModule,
+    NotesModule,
     PairModule,
-    NotesModule
+    TradeModule,
+    BrokerModule
   ],
   controllers: [AppController],
   providers: [AppService],
