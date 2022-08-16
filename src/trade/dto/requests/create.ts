@@ -15,14 +15,10 @@ export class CreateBody {
   action: string;
 
   @IsDate()
-  dateOpen: Date;
+  tradeTime: Date;
 
   @IsNumber()
   open: number;
-
-  @IsDate()
-  @IsOptional()
-  dateClose: Date;
 
   @IsNumber()
   @IsOptional()
@@ -52,4 +48,8 @@ export class CreateBody {
   @IsBoolean()
   @IsOptional()
   isManual: boolean;
+
+  @IsString()
+  @IsOptional()
+  brokerId?: string;
 }

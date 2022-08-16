@@ -74,7 +74,11 @@ export class BrokerController {
     
     const {broker} = data;
 
-    this.rootService.sync(broker, payload.userId);
+    try{
+      await this.rootService.sync(broker, payload.userId);
+    }catch(e){
+      console.log(e)
+    }  
 
     return true;
   }

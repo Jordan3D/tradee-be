@@ -24,4 +24,7 @@ export class BrokerEntity extends BaseEntity {
 
   @Column({ type: DataType.BOOLEAN})
   isSyncing: boolean;
+
+  @Column({ type: DataType.JSONB})
+  lastSync: any;
 }

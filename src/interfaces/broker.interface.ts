@@ -15,4 +15,5 @@ export interface IBroker extends IBase{
     secret_key: string;
     authorId: string;
     isSyncing: boolean;
+    lastSync: Date;
 }

@@ -8,17 +8,17 @@ export class ResponseDto implements ITrade {
 
   action: string;
 
-  dateOpen: Date;
+  tradeTime: Date;
 
   open: number;
-
-  dateClose?: Date;
 
   close?: number;
 
   fee?: number;
 
   authorId: string;
+
+  brokerId?: string;
 
   tags: string[];
 

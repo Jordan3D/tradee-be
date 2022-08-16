@@ -108,12 +108,12 @@ export type LogItem = {
 export const transformIntoTradeCreate =(
   trade: TradeByBit,
   pair: IPair,
-  authorId: string
+  authorId: string,
+  brokerId: string
 ):Omit<ITradeOverall , 'id' | 'createdAt' | 'updatedAt'>  => ({
   pairId: pair.id,
   action: trade.side,
-  dateOpen: new Date(trade.created_at * 1000),
-  dateClose: null,
+  tradeTime: new Date(trade.created_at * 1000),
   close: trade.closed_size,
   open: trade.qty,
   orderType: trade.order_type,
@@ -121,6 +121,7 @@ export const transformIntoTradeCreate =(
   pnl: trade.closed_pnl,
   isManual: false,
   authorId,
+  brokerId,
   fee: 0,
   tags: [],
   notes: []

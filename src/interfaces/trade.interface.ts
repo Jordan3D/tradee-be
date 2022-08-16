@@ -3,14 +3,14 @@ import {IBase} from './base.interface';
 export interface ITrade extends IBase{
   pairId: string;
   action: string;
-  dateOpen: Date;
   open: number;
-  dateClose?: Date;
+  tradeTime: Date;
   close?: number;
   fee?: number;
   leverage: number;
   pnl: number;
   authorId: string;
+  brokerId?: string;
   orderType: string;
   isManual: boolean;
 }

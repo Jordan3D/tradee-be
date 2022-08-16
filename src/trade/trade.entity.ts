@@ -1,4 +1,5 @@
 import { Table, Column, DataType, ForeignKey, BelongsTo, Sequelize } from 'sequelize-typescript';
+import { BrokerEntity } from 'src/broker/broker.entity';
 import { PairEntity } from 'src/pair/pair.entity';
 import { BaseEntity } from '../models/base.entity';
 import { UserEntity } from '../user/user.entity';
@@ -17,6 +18,12 @@ export class TradeEntity extends BaseEntity {
   @BelongsTo(() => UserEntity)
   author: UserEntity;
 
+  @ForeignKey(() => BrokerEntity)
+  brokerId: string;
+
+  @BelongsTo(() => BrokerEntity)
+  broker: BrokerEntity;
+
   @Column({ type: DataType.STRING })
   action: string;
 
@@ -24,16 +31,13 @@ export class TradeEntity extends BaseEntity {
   open: number;
 
   @Column({ defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"), })
-  dateOpen: Date;
+  tradeTime: Date;
 
   @Column({ type: DataType.FLOAT })
   close: number;
 
   @Column({ type: DataType.FLOAT })
   leverage: number;
-
-  @Column({ defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"), })
-  dateClose: Date;
 
   @Column({ type: DataType.FLOAT })
   fee: number;

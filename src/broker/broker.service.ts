@@ -1,7 +1,6 @@
 const fs = require('fs');
 var path = require('path');
 
-
 import {
   forwardRef,
   Inject,
@@ -19,8 +18,7 @@ import { PairService } from 'src/pair';
 import { IPair } from 'src/interfaces/pair.interface';
 import { TradeService } from 'src/trade';
 import { transformIntoTradeCreate } from 'src/util';
-import { CreateBody } from 'src/trade/dto/requests';
-import { ITrade, ITradeOverall } from 'src/interfaces/trade.interface';
+import { ITradeOverall } from 'src/interfaces/trade.interface';
 
 
 @Injectable()
@@ -38,10 +36,15 @@ export class BrokerService {
     private readonly tradeService: TradeService
   ) { }
 
-  async create(data: Omit<IBroker, 'id' | 'createdAt' | 'updatedAt' | 'isSyncing'>): Promise<IBroker> {
-    const dataToCreate = { ...data, author: { id: data.authorId } }
-
-    return (await this.rootModel.create(dataToCreate)).toJSON();
+  async create(data: Omit<IBroker, 'id' | 'createdAt' | 'updatedAt' | 'isSyncing' | 'lastSync'>): Promise<IBroker> {
+    const dataToCreate = { ...data, author: { id: data.authorId }, isSyncing: false }
+    let result;
+    try {
+      result = await this.rootModel.create(dataToCreate);
+    } catch (e){
+      console.log(e);
+    }
+    return (result).toJSON();
   }
 
   async getById(id: string, omit?: string[]): Promise<IBroker | undefined> {
@@ -68,7 +71,7 @@ export class BrokerService {
     return !!res;
   }
 
-  async update(id: string, updates: Omit<UpdateBody, 'id' | 'createdAt' | 'updatedAt' | 'author'>): Promise<IBroker | undefined> {
+  async update(id: string, updates: Omit<UpdateBody, 'id' | 'createdAt' | 'updatedAt' | 'author' | 'lastSync' | 'isSyncing'>): Promise<IBroker | undefined> {
     try {
       await this.rootModel.update(updates, { where: { id } });
     } catch (error) {
@@ -90,26 +93,13 @@ export class BrokerService {
   }
 
   async sync(id: string, authorId: string): Promise<boolean> {
-    // const one = await this.rootModel.findOne({where: {id}, raw: true});
-    // one.isSyncing = true;
+    const one = await this.rootModel.findOne({where: {id}, raw: true});
 
-    // create folder in syncData with name if authorId 
-    // check if directory exists
-    // const dir = 'syncData';
-    // const userDir = `${dir}/${authorId}`;
-
-    // // preparing for sync
-    // if (!fs.existsSync(dir)) {
-    //   fs.mkdirSync(dir);
-    // }
-
-    // if (!fs.existsSync(userDir)) {
-    //   fs.mkdirSync(userDir);
-    // }
+    if(!one || one.authorId !== authorId){
+      return false;
+    }
 
     const config = {
-      api_key: '2ixQyeCPUWumHRZYeL',
-      secret_key: 'w6VTPRzxuQcJGeDuEIKdEdMKinoNndvsRvXn',
       url: 'https://api.bybit.com',
       signature: '11a4b5a44c99e87707a9fb3eac61475c20f08097bc72c3da47134fa3e6120594'
     }
@@ -120,59 +110,57 @@ export class BrokerService {
 
     const useLivenet = true;
 
-
     const client = new LinearClient(
-      config.api_key,
-      config.secret_key,
+      one.api_key,
+      one.secret_key,
       useLivenet,
       restClientOptions
     );
 
     const pairs = await this.pairService.findAll();
+    const lastSync = one.lastSync ? JSON.parse(one.lastSync) : [];
 
-    async function foo() {
+    const processSync = async () => {
       const logs = await pairs.reduce<Promise<BrokerLog[]>>(async (memo: Promise<BrokerLog[]>, pair: IPair) => {
         const results = await memo;
         const v = await cycle(pair);
         return [...results, v];
       }, Promise.resolve([]));
 
-      console.log(logs);
+       // update sync flag on finish
+      await this.rootModel.update({isSyncing: false, lastSync: JSON.stringify(logs)}, { where: { id } });
+      console.log(`Sync ${id} success`);
     }
 
     const cycle = async (pair: IPair): Promise<BrokerLog> =>{
       let page = 0;
-      // let fileName = getUnixTime(new Date());
-
-      // const writer = fs.createWriteStream(`${dir}/${fileName}.json`, {
-      //   flags: 'a'
-      // });
-
+      const sync = lastSync.find(pairSync => pairSync.pairId === pair.id);
+    
       let data = [] as Omit<ITradeOverall, 'id' | 'createdAt' | 'updatedAt'>[];
 
       while (true) {
         page += 1;
 
-        const { result } = await client.getClosedPnl({ symbol: pair.title, page });
+        const { result } = await client.getClosedPnl({ symbol: pair.title, page, start_time: sync ? getUnixTime(sync.lastUpdated) : undefined});
         if (!result.data)
           break;
 
-        data = data.concat(result.data.map(trade => transformIntoTradeCreate(trade, pair, authorId)));
+        data = data.concat(result.data.map(trade => transformIntoTradeCreate(trade, pair, authorId, id)));
       }
 
       await this.tradeService.createMultiple(data);
 
       return {
-        lastUpdated: getUnixTime(new Date()),
+        lastUpdated: getUnixTime(new Date()) * 1000,
         pairId: pair.id
       }
     }
 
-    // writer.write(JSON.stringify(data));
-    // console.log(data.length);
-    // writer.end();
+    // update sync flag on start
+    await this.rootModel.update({isSyncing: true}, { where: { id } });
+    console.log(`Sync ${id} start`);
 
-    foo();
+    processSync();
     return true;
   }
 }

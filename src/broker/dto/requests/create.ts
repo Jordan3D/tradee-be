@@ -1,8 +1,5 @@
 import {
   IsString,
-  IsOptional,
-  IsNumber,
-  IsArray
 } from 'class-validator';
 import { BrokerTypeEnum } from 'src/interfaces/broker.interface';
 

@@ -6,25 +6,6 @@ import {
 } from 'class-validator';
 
 export class UpdateBody {
-  @IsString()
-  pair: string;
-
-  @IsString()
-  action: string;
-
-  @IsString()
-  dateOpen: string;
-
-  @IsNumber()
-  open: number;
-
-  @IsString()
-  dateClose: string;
-
-  @IsNumber()
-  @IsOptional()
-  close: number;
-
   @IsNumber()
   @IsOptional()
   fee: number;
@@ -44,4 +25,8 @@ export class UpdateBody {
   @IsOptional()
   @IsArray()
   notesDeleted?: string[];
+
+  @IsString()
+  @IsOptional()
+  brokerId?: string;
 }

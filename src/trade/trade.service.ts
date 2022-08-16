@@ -128,9 +128,9 @@ export class TradeService {
       `SELECT *  FROM "Trade" trade,
         LATERAL (
            SELECT ARRAY (
-              SELECT "tagId"
-              FROM   "Tags" tags
-              WHERE  tags."parentId" = trade.id
+            SELECT "tagId"
+            FROM   "Tags" tags
+            WHERE  tags."parentId" = trade.id
               ) AS tags
            ) t,
            LATERAL (

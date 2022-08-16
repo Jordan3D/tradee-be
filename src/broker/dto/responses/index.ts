@@ -1,7 +1,7 @@
 import { IBroker } from 'src/interfaces/broker.interface';
 import { ITrade } from 'src/interfaces/trade.interface';
 
-export class ResponseDto implements Omit<IBroker, 'api_key' | 'secret_key'> {
+export class ResponseDto implements Omit<IBroker, 'api_key' | 'secret_key' | 'lastSync'> {
   
   id: string;
 
