@@ -25,7 +25,7 @@ export class NotesService {
   }
 
   async delete({ parentId, noteIds }: Readonly<{ noteIds: string[], parentId: string }>): Promise<boolean> {
-    const res = await this.rootModel.destroy({ where: { parentId, tagId: noteIds } });
+    const res = await this.rootModel.destroy({ where: { parentId, noteId: noteIds } });
 
     return !!res;
   }

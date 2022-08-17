@@ -58,7 +58,7 @@ export class TradeService {
 
     if (findedOne.id) {
       result.tags = await this.tagsService.getByParentId(findedOne.id);
-      result.tags = await this.notesService.getByParentId(findedOne.id);
+      result.notes = await this.notesService.getByParentId(findedOne.id);
     }
 
 
