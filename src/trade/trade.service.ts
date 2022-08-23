@@ -12,6 +12,7 @@ import { ITrade, ITradeOverall, TradeByBit } from 'src/interfaces/trade.interfac
 import { NotesService } from 'src/notes';
 import { TradeEntity } from './trade.entity';
 import { CreateBody } from 'src/tag/dto/requests';
+import { ResponseDto } from './dto/responses';
 
 @Injectable()
 export class TradeService {
@@ -22,7 +23,9 @@ export class TradeService {
     private readonly tagsService: TagsService,
     @Inject(forwardRef(() => NotesService))
     private readonly notesService: NotesService
-  ) { }
+  ) { 
+   
+  }
 
   async create(data: Omit<ITradeOverall, 'id' | 'createdAt' | 'updatedAt'>): Promise<ITradeOverall> {
     const dataToCreate = { ...data, author: { id: data.authorId } }
@@ -119,11 +122,13 @@ export class TradeService {
   }
 
   async findBy(
-    { pairId, limit, offset, authorId }:
-      Readonly<{ pairId?: string, limit?: number, offset?: number, authorId: string }>
+    { pairId, limit, offset, authorId, orderBy }:
+      Readonly<{ pairId?: string, limit?: number, offset?: number, authorId: string, orderBy: string }>
   ): Promise<Readonly<{
-    data: ITradeOverall[], total: number, offset: number, limit: number
+    data: ITradeOverall[], total: number, offset: number, limit: number, orderBy: string
   }>> {
+    const [_orderBy = 'tradeTime', direction = 'DESC'] = orderBy.split(',');
+    
     const data = (await this.rootModel.sequelize.query(
       `SELECT *  FROM "Trade" trade,
         LATERAL (
@@ -141,7 +146,7 @@ export class TradeService {
                ) AS notes
             ) n
         WHERE "authorId"='${authorId}' ${!pairId ? '' : 'AND "pairId"=\'' + pairId + '\''}
-        ORDER BY "createdAt" ASC
+        ORDER BY "${_orderBy}" ${direction}
         ${limit ? 'LIMIT '+ limit : ''}
         ${offset ? 'OFFSET '+ offset : ''}
         `,
@@ -153,7 +158,8 @@ export class TradeService {
       data,
       total,
       offset,
-      limit
+      limit,
+      orderBy
     }
   }
 }

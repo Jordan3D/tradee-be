@@ -27,6 +27,7 @@ import config from '../config';
 import { getToken } from '../util';
 import { ITrade, ITradeOverall } from 'src/interfaces/trade.interface';
 import { TradeService } from './trade.service';
+import { TradeEntity } from './trade.entity';
 
 
 @Controller('/trade')
@@ -83,6 +84,17 @@ export class TradeController {
   }>> {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
+
+    try {
+      const [_orderBy] = query?.orderBy?.split(',');
+
+      if(_orderBy && !Object.keys(TradeEntity.getAttributes()).includes(_orderBy)){
+        throw new Error('Wrong order params')
+      }
+    }catch(e){
+      throw new BadRequestException(e.message)
+    }
+
     return this.rootService.findBy({...query, authorId: payload.userId})
   }
 

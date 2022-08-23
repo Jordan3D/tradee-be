@@ -1,5 +1,3 @@
-const fs = require('fs');
-var path = require('path');
 
 import {
   forwardRef,
@@ -11,14 +9,15 @@ import { UpdateBody } from './dto/requests';
 import { TagsService } from 'src/tags/tags.service';
 import { NotesService } from 'src/notes';
 import { BrokerEntity } from './broker.entity';
-import { BrokerLog, IBroker } from 'src/interfaces/broker.interface';
+import { IBroker, TLastSync } from 'src/interfaces/broker.interface';
 import { LinearClient } from 'bybit-api';
-import { getUnixTime } from 'date-fns';
 import { PairService } from 'src/pair';
 import { IPair } from 'src/interfaces/pair.interface';
 import { TradeService } from 'src/trade';
-import { transformIntoTradeCreate } from 'src/util';
+import { transformIntoTradeCreate, transformIntoOrderCreate } from 'src/util';
 import { ITradeOverall } from 'src/interfaces/trade.interface';
+import { OrderService } from 'src/order/order.service';
+import { IOrder } from 'src/interfaces/order.interface copy';
 
 
 @Injectable()
@@ -33,7 +32,9 @@ export class BrokerService {
     @Inject(forwardRef(() => PairService))
     private readonly pairService: PairService,
     @Inject(forwardRef(() => TradeService))
-    private readonly tradeService: TradeService
+    private readonly tradeService: TradeService,
+    @Inject(forwardRef(() => OrderService))
+    private readonly orderService: OrderService
   ) { }
 
   async create(data: Omit<IBroker, 'id' | 'createdAt' | 'updatedAt' | 'isSyncing' | 'lastSync'>): Promise<IBroker> {
@@ -118,42 +119,79 @@ export class BrokerService {
     );
 
     const pairs = await this.pairService.findAll();
-    const lastSync = one.lastSync ? JSON.parse(one.lastSync) : [];
+    const lastSync : TLastSync = one.lastSync ? JSON.parse(one.lastSync) : {pnl: {}, order: {}};
 
     const processSync = async () => {
-      const logs = await pairs.reduce<Promise<BrokerLog[]>>(async (memo: Promise<BrokerLog[]>, pair: IPair) => {
+      await pairs.reduce<Promise<boolean[]>>(async (memo: Promise<boolean[]>, pair: IPair) => {
         const results = await memo;
         const v = await cycle(pair);
         return [...results, v];
       }, Promise.resolve([]));
 
        // update sync flag on finish
-      await this.rootModel.update({isSyncing: false, lastSync: JSON.stringify(logs)}, { where: { id } });
+      await this.rootModel.update({isSyncing: false, lastSync: JSON.stringify(lastSync)}, { where: { id } });
       console.log(`Sync ${id} success`);
     }
 
-    const cycle = async (pair: IPair): Promise<BrokerLog> =>{
+    const cycle = async (pair: IPair): Promise<boolean> =>{
       let page = 0;
-      const sync = lastSync.find(pairSync => pairSync.pairId === pair.id);
+      const syncPnl = lastSync.pnl[pair.title] ? lastSync.pnl[pair.title] : undefined;
+      const syncOrder = lastSync.order[pair.title] ? lastSync.order[pair.title] : undefined;
+
+      console.log('syncPnl')
+      console.log(syncPnl);
     
-      let data = [] as Omit<ITradeOverall, 'id' | 'createdAt' | 'updatedAt'>[];
+      let data = {pnl: [] as Omit<ITradeOverall, 'id' | 'createdAt' | 'updatedAt'>[] , order: [] as Omit<IOrder, 'id' | 'createdAt' | 'updatedAt'>[]}
 
       while (true) {
         page += 1;
 
-        const { result } = await client.getClosedPnl({ symbol: pair.title, page, start_time: sync ? getUnixTime(sync.lastUpdated) : undefined});
-        if (!result.data)
+        const { result } = await client.getClosedPnl({ symbol: pair.title, page, start_time: syncPnl});
+        if (!result?.data)
           break;
 
-        data = data.concat(result.data.map(trade => transformIntoTradeCreate(trade, pair, authorId, id)));
+        data.pnl = data.pnl.concat(result.data.map(trade => transformIntoTradeCreate(trade, pair, authorId, id)));
+
+        // setting sync date by saving last trade date
+        if(result.data.length && page === 1){
+          lastSync.pnl[pair.title] = result.data[0].created_at + 1;
+        }
       }
 
-      await this.tradeService.createMultiple(data);
+      page = 0;
 
-      return {
-        lastUpdated: getUnixTime(new Date()) * 1000,
-        pairId: pair.id
+      while (true) {
+        page += 1;
+
+        const { result } = await client.getTradeRecords({ symbol: pair.title, page, start_time: syncOrder});
+        
+        if (!result?.data)
+          break;
+
+        data.order = data.order.concat(result.data.map(trade => transformIntoOrderCreate(trade, pair, authorId, id)));
+
+        // setting sync date by saving last trade date
+        if(result.data.length && page === 1){
+          lastSync.order[pair.title] = result.data[0].trade_time  + 1;
+        }
       }
+
+      // adding missing data to pnl trades from order history
+      data.pnl = data.pnl.map(trade => {
+        const order = data.order.find(order => order.order_id === trade.order_id);
+
+        return {
+          ...trade,
+          closeTradeTime: order.trade_time
+        }
+      })
+      //
+
+
+      await this.tradeService.createMultiple(data.pnl);
+      await this.orderService.createMultiple(data.order);
+
+      return true;
     }
 
     // update sync flag on start

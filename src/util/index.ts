@@ -1,12 +1,9 @@
 import { Request } from 'express';
-import { LinearClient } from 'bybit-api';
-import { getUnixTime } from 'date-fns';
 import { PairEntity } from 'src/pair/pair.entity';
-import { ITrade, ITradeOverall, TradeByBit } from 'src/interfaces/trade.interface';
+import { ITradeOverall, TradeByBit } from 'src/interfaces/trade.interface';
 const fs = require('fs');
-
-import {CreateBody} from '../trade/dto/requests/create';
 import { IPair } from 'src/interfaces/pair.interface';
+import { IOrder, OrderByBit } from 'src/interfaces/order.interface copy';
 
 const restClientOptions = {
   recv_window: 4000
@@ -113,16 +110,30 @@ export const transformIntoTradeCreate =(
 ):Omit<ITradeOverall , 'id' | 'createdAt' | 'updatedAt'>  => ({
   pairId: pair.id,
   action: trade.side,
-  tradeTime: new Date(trade.created_at * 1000),
-  close: trade.closed_size,
-  open: trade.qty,
+  openTradeTime: new Date(trade.created_at * 1000),
+  closePrice: trade.avg_exit_price,
+  openPrice: trade.order_price,
+  order_id: trade.order_id,
   orderType: trade.order_type,
   leverage: trade.leverage,
   pnl: trade.closed_pnl,
   isManual: false,
   authorId,
   brokerId,
-  fee: 0,
+  execType: trade.exec_type,
   tags: [],
   notes: []
+});
+
+export const transformIntoOrderCreate =(
+  order: OrderByBit,
+  pair: IPair,
+  authorId: string,
+  brokerId: string
+):Omit<IOrder , 'id' | 'createdAt' | 'updatedAt'>  => ({
+  pairId: pair.id,
+  authorId,
+  brokerId,
+  ...order,
+  trade_time: new Date(order.trade_time * 1000),
 })

@@ -13,6 +13,7 @@ import { TradeModule } from './trade';
 import { PairModule } from './pair';
 import { NotesModule } from './notes';
 import { BrokerModule } from './broker';
+import { OrderModule } from './order';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { BrokerModule } from './broker';
     NotesModule,
     PairModule,
     TradeModule,
+    OrderModule,
     BrokerModule
   ],
   controllers: [AppController],

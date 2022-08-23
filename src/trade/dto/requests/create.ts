@@ -15,21 +15,24 @@ export class CreateBody {
   action: string;
 
   @IsDate()
-  tradeTime: Date;
+  openTradeTime: Date;
+
+  @IsDate()
+  @IsOptional()
+  closeTradeTime: Date;
 
   @IsNumber()
-  open: number;
+  openPrice: number;
 
   @IsNumber()
   @IsOptional()
-  close: number;
-
-  @IsNumber()
-  @IsOptional()
-  fee: number;
+  closePrice: number;
 
   @IsString()
   orderType: string;
+
+  @IsString()
+  execType: string;
 
   @IsNumber()
   leverage: number;
@@ -48,6 +51,10 @@ export class CreateBody {
   @IsBoolean()
   @IsOptional()
   isManual: boolean;
+
+  @IsString()
+  @IsOptional()
+  order_id: string;
 
   @IsString()
   @IsOptional()

@@ -16,6 +16,14 @@ export class PairService {
   ) {}
   
   async create(data: Omit<IPair, 'id' | 'createdAt' | 'updatedAt'>): Promise<IPair> { 
+    try {
+      const find = await this.rootModel.findOne({where: {title: data.title}, raw: true});
+      if(find){
+        throw new Error('Alreay excist');
+      }
+    } catch(e){
+      throw e;
+    }
     return (await this.rootModel.create(data)).toJSON();
   }
   

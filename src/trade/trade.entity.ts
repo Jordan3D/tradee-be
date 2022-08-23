@@ -28,25 +28,31 @@ export class TradeEntity extends BaseEntity {
   action: string;
 
   @Column({ type: DataType.FLOAT })
-  open: number;
+  openPrice: number;
 
-  @Column({ defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"), })
-  tradeTime: Date;
+  @Column({  type: DataType.DATE  })
+  openTradeTime: Date;
 
   @Column({ type: DataType.FLOAT })
-  close: number;
+  closePrice: number;
+
+  @Column({  type: DataType.DATE  })
+  closeTradeTime?: Date;
 
   @Column({ type: DataType.FLOAT })
   leverage: number;
-
-  @Column({ type: DataType.FLOAT })
-  fee: number;
 
   @Column({ type: DataType.FLOAT })
   pnl: number;
 
   @Column({ type: DataType.STRING})
   orderType: string;
+
+  @Column({ type: DataType.STRING})
+  execType: string;
+
+  @Column({ type: DataType.STRING})
+  order_id: string;
 
   @Column({ type: DataType.BOOLEAN })
   isManual: boolean;

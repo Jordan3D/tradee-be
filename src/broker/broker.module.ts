@@ -7,6 +7,8 @@ import { BrokerEntity } from './broker.entity';
 import { BrokerController } from './broker.controller';
 import { PairModule } from 'src/pair';
 import { TradeModule } from 'src/trade';
+import { OrderService } from 'src/order/order.service';
+import { OrderModule } from 'src/order';
 
 @Module({
   imports: [
@@ -15,6 +17,7 @@ import { TradeModule } from 'src/trade';
     forwardRef(() => NotesModule),
     forwardRef(() => PairModule),
     forwardRef(() => TradeModule),
+    forwardRef(() => OrderModule),
   ],
   providers: [BrokerService],
   exports: [BrokerService],

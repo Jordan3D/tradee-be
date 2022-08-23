@@ -11,7 +11,8 @@ import {
   UseGuards,
   Req,
   Query,
-  Delete
+  Delete,
+  InternalServerErrorException
 } from '@nestjs/common';
 
 import {getUnixTime} from 'date-fns';
@@ -51,7 +52,7 @@ export class PairController {
 
       createdEntity = await this.rootService.create(createData);
     } catch (e) {
-      throw new BadRequestException(e);
+      throw new InternalServerErrorException(e.message);
     }
 
     return new ResponseDto(createdEntity);

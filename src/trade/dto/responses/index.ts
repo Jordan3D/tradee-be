@@ -8,13 +8,13 @@ export class ResponseDto implements ITrade {
 
   action: string;
 
-  tradeTime: Date;
+  openTradeTime: Date;
 
-  open: number;
+  openPrice: number;
 
-  close?: number;
-
-  fee?: number;
+  closePrice?: number;
+  
+  closeTradeTime: Date;
 
   authorId: string;
 
@@ -33,6 +33,10 @@ export class ResponseDto implements ITrade {
   pnl: number;
 
   orderType: string;
+  
+  execType: string;
+
+  order_id: string;
 
   isManual: boolean;
 
