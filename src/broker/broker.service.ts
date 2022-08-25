@@ -14,11 +14,12 @@ import { LinearClient } from 'bybit-api';
 import { PairService } from 'src/pair';
 import { IPair } from 'src/interfaces/pair.interface';
 import { TradeService } from 'src/trade';
-import { transformIntoTradeCreate, transformIntoOrderCreate } from 'src/util';
+import { transformIntoTrade, transformIntoTT } from 'src/util';
 import { ITradeOverall } from 'src/interfaces/trade.interface';
-import { OrderService } from 'src/order/order.service';
-import { IOrder } from 'src/interfaces/order.interface copy';
+import { TradeTransactionService } from 'src/tradeTransaction/tradeTransaction.service';
+import { ITradeTransactionEntity } from 'src/interfaces/tradeTransaction.interface';
 
+const defaultSync = {pnl: {}, tradeTransactions: {}};
 
 @Injectable()
 export class BrokerService {
@@ -33,8 +34,8 @@ export class BrokerService {
     private readonly pairService: PairService,
     @Inject(forwardRef(() => TradeService))
     private readonly tradeService: TradeService,
-    @Inject(forwardRef(() => OrderService))
-    private readonly orderService: OrderService
+    @Inject(forwardRef(() => TradeTransactionService))
+    private readonly tradeTransactionService: TradeTransactionService
   ) { }
 
   async create(data: Omit<IBroker, 'id' | 'createdAt' | 'updatedAt' | 'isSyncing' | 'lastSync'>): Promise<IBroker> {
@@ -93,6 +94,23 @@ export class BrokerService {
     )
   }
 
+  async clearSync(id: string, authorId: string): Promise<boolean> {
+    const one = await this.rootModel.findOne({where: {id}, raw: true});
+    if(!one || one.authorId !== authorId){
+      return false;
+    }
+
+    try {
+      await this.rootModel.update({isSyncing: false, lastSync: JSON.stringify(defaultSync)}, { where: { id } });
+      await this.tradeService.deleteAllByParent(authorId);
+      await this.tradeTransactionService.deleteAllByParent(authorId);
+    } catch (e){
+      throw e;
+    }
+
+    return true;
+  }
+
   async sync(id: string, authorId: string): Promise<boolean> {
     const one = await this.rootModel.findOne({where: {id}, raw: true});
 
@@ -119,7 +137,7 @@ export class BrokerService {
     );
 
     const pairs = await this.pairService.findAll();
-    const lastSync : TLastSync = one.lastSync ? JSON.parse(one.lastSync) : {pnl: {}, order: {}};
+    const lastSync : TLastSync = one.lastSync ? JSON.parse(one.lastSync) : defaultSync;
 
     const processSync = async () => {
       await pairs.reduce<Promise<boolean[]>>(async (memo: Promise<boolean[]>, pair: IPair) => {
@@ -136,12 +154,9 @@ export class BrokerService {
     const cycle = async (pair: IPair): Promise<boolean> =>{
       let page = 0;
       const syncPnl = lastSync.pnl[pair.title] ? lastSync.pnl[pair.title] : undefined;
-      const syncOrder = lastSync.order[pair.title] ? lastSync.order[pair.title] : undefined;
-
-      console.log('syncPnl')
-      console.log(syncPnl);
+      const syncTransactions= lastSync.tradeTransactions[pair.title] ? lastSync.tradeTransactions[pair.title] : undefined;
     
-      let data = {pnl: [] as Omit<ITradeOverall, 'id' | 'createdAt' | 'updatedAt'>[] , order: [] as Omit<IOrder, 'id' | 'createdAt' | 'updatedAt'>[]}
+      let data = {pnl: [] as Omit<ITradeOverall, 'id' | 'createdAt' | 'updatedAt'>[] , tradeTransactions: [] as Omit<ITradeTransactionEntity, 'id' | 'createdAt' | 'updatedAt'>[]}
 
       while (true) {
         page += 1;
@@ -150,7 +165,7 @@ export class BrokerService {
         if (!result?.data)
           break;
 
-        data.pnl = data.pnl.concat(result.data.map(trade => transformIntoTradeCreate(trade, pair, authorId, id)));
+        data.pnl = data.pnl.concat(result.data.map(trade => transformIntoTrade(trade, pair, authorId, id)));
 
         // setting sync date by saving last trade date
         if(result.data.length && page === 1){
@@ -163,22 +178,22 @@ export class BrokerService {
       while (true) {
         page += 1;
 
-        const { result } = await client.getTradeRecords({ symbol: pair.title, page, start_time: syncOrder});
+        const { result } = await client.getTradeRecords({ symbol: pair.title, page, start_time: syncTransactions});
         
         if (!result?.data)
           break;
 
-        data.order = data.order.concat(result.data.map(trade => transformIntoOrderCreate(trade, pair, authorId, id)));
+        data.tradeTransactions = data.tradeTransactions.concat(result.data.map(trade => transformIntoTT(trade, pair, authorId, id)));
 
         // setting sync date by saving last trade date
         if(result.data.length && page === 1){
-          lastSync.order[pair.title] = result.data[0].trade_time  + 1;
+          lastSync.tradeTransactions[pair.title] = result.data[0].trade_time  + 1;
         }
       }
 
       // adding missing data to pnl trades from order history
       data.pnl = data.pnl.map(trade => {
-        const order = data.order.find(order => order.order_id === trade.order_id);
+        const order = data.tradeTransactions.find(order => order.order_id === trade.order_id);
 
         return {
           ...trade,
@@ -189,7 +204,7 @@ export class BrokerService {
 
 
       await this.tradeService.createMultiple(data.pnl);
-      await this.orderService.createMultiple(data.order);
+      await this.tradeTransactionService.createMultiple(data.tradeTransactions);
 
       return true;
     }

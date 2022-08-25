@@ -78,25 +78,35 @@ export class TradeController {
 
   // for input search
   @UseGuards(AuthGuard('jwt'))
-  @Get('/list')
-  async findBy(@Req() request: Request, @Query() query):Promise<Readonly<{
-    data: ITradeOverall[], total: number, offset: number, limit: number
-  }>> {
+  @Post('/get-ids')
+  async findByIds(@Req() request: Request, @Body() data: string[]):Promise<ITradeOverall[]> {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
 
-    try {
-      const [_orderBy] = query?.orderBy?.split(',');
-
-      if(_orderBy && !Object.keys(TradeEntity.getAttributes()).includes(_orderBy)){
-        throw new Error('Wrong order params')
-      }
-    }catch(e){
-      throw new BadRequestException(e.message)
-    }
-
-    return this.rootService.findBy({...query, authorId: payload.userId})
+    return this.rootService.findByIds({authorId: payload.userId, Ids: data})
   }
+
+   // for input search
+   @UseGuards(AuthGuard('jwt'))
+   @Get('/list')
+   async findBy(@Req() request: Request, @Query() query):Promise<Readonly<{
+     data: ITradeOverall[], total: number, offset: number, limit: number
+   }>> {
+     const token = getToken(request);
+     const payload = jwt.verify(token, config.jwtSecret);
+ 
+     try {
+       const [_orderBy] = query.orderBy ? query.orderBy?.split(',') : [];
+ 
+       if(_orderBy && !Object.keys(TradeEntity.getAttributes()).includes(_orderBy)){
+         throw new Error('Wrong order params')
+       }
+     }catch(e){
+       throw new BadRequestException(e.message)
+     }
+ 
+     return this.rootService.findBy({...query, authorId: payload.userId})
+   }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/:id')

@@ -11,7 +11,10 @@ import {
   UseGuards,
   Req,
   Query,
-  Delete
+  Delete,
+  UseInterceptors,
+  ClassSerializerInterceptor,
+  InternalServerErrorException
 } from '@nestjs/common';
 
 
@@ -19,7 +22,7 @@ const jwt = require('jsonwebtoken');
 
 import { AuthGuard } from '@nestjs/passport';
 import { CreateBody, SyncBody, UpdateBody } from './dto/requests';
-import { ResponseDto } from './dto/responses';
+import { ResponseBroker, ResponseDto } from './dto/responses';
 import { Request } from 'express';
 import config from '../config';
 import { getToken } from '../util';
@@ -58,12 +61,12 @@ export class BrokerController {
 
   // for input search
   @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get('/list')
-  async findBy(@Req() request: Request, @Query() query):Promise<IBroker[]> {
+  async findBy(@Req() request: Request):Promise<ResponseBroker[]> {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
-    const {pairId} = query;
-    return this.rootService.list(payload.userId)
+    return (await this.rootService.list(payload.userId)).map( b => new ResponseBroker(b))
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -82,6 +85,24 @@ export class BrokerController {
 
     return true;
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/sync-clear')
+  async clearSync(@Body() data: SyncBody, @Req() request: Request): Promise<boolean>{
+    const token = getToken(request);
+    const payload = jwt.verify(token, config.jwtSecret);
+    
+    const {broker} = data;
+
+    try{
+      return this.rootService.clearSync(broker, payload.userId);
+    }catch(e){
+      throw new InternalServerErrorException(e.message);
+    }  
+
+    return false;
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Get('/broker-types')
   async brokerTypes(): Promise<string[]> {

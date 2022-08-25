@@ -76,6 +76,12 @@ export class TradeService {
     return result;
   }
 
+  async deleteAllByParent(authorId: string): Promise<boolean> {
+    const res = await this.rootModel.destroy({ where: { authorId } });
+
+    return !!res;
+  }
+
   async delete(id: string): Promise<boolean> {
     const res = await this.rootModel.destroy({ where: { id } });
 
@@ -121,13 +127,42 @@ export class TradeService {
     return await this.rootModel.findAll({ where: { authorId, dateOpen: { $between: [startDate, endDate] } } })
   }
 
+  async findByIds(
+    { authorId, Ids }:
+      Readonly<{ authorId: string, Ids: string[] }>
+  ): Promise<ITradeOverall[]> {
+
+    const data = (await this.rootModel.sequelize.query(
+      `SELECT *  FROM "Trade" trade,
+        LATERAL (
+           SELECT ARRAY (
+            SELECT "tagId"
+            FROM   "Tags" tags
+            WHERE  tags."parentId" = trade.id
+              ) AS tags
+           ) t,
+           LATERAL (
+            SELECT ARRAY (
+               SELECT "noteId"
+               FROM   "Notes" notes
+               WHERE  notes."parentId" = trade.id
+               ) AS notes
+            ) n
+        WHERE "authorId"='${authorId}' AND trade.id IN (${Ids.map(id => `'${id}'`).join(',')})
+        `,
+      { type: QueryTypes.SELECT }
+    )) as ITradeOverall[];
+
+    return data;
+  }
+
   async findBy(
-    { pairId, limit, offset, authorId, orderBy }:
+    { pairId, limit, offset, authorId, orderBy = 'openTradeTime' }:
       Readonly<{ pairId?: string, limit?: number, offset?: number, authorId: string, orderBy: string }>
   ): Promise<Readonly<{
     data: ITradeOverall[], total: number, offset: number, limit: number, orderBy: string
   }>> {
-    const [_orderBy = 'tradeTime', direction = 'DESC'] = orderBy.split(',');
+    const [_orderBy, direction = 'DESC'] = orderBy.split(',');
     
     const data = (await this.rootModel.sequelize.query(
       `SELECT *  FROM "Trade" trade,

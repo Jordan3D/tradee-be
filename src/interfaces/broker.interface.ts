@@ -12,7 +12,7 @@ export type BrokerLog = {
 
 export type TLastSync = {
     pnl: Record<'string', number>,
-    order: Record<'string', number>
+    tradeTransactions: Record<'string', number>
 }
 export interface IBroker extends IBase{
     title: string;

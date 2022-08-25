@@ -1,13 +1,19 @@
-import { Table, Column, DataType, Model } from 'sequelize-typescript';
-import { BaseEntity } from 'src/models';
+import { Table, Column, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { BaseEntity, UserEntity } from 'src/models';
 
-@Table({ modelName: 'Order', freezeTableName: true })
-export class OrderEntity extends BaseEntity {
+@Table({ modelName: 'TradeTransaction', freezeTableName: true })
+export class TradeTransactionEntity extends BaseEntity {
   @Column({  type: DataType.STRING })
   order_id: string;
 
   @Column({  type: DataType.STRING  })
   exec_id: string;
+
+  @ForeignKey(() => UserEntity)
+  authorId: string;
+
+  @BelongsTo(() => UserEntity)
+  author: UserEntity;
 
   @Column({  type: DataType.STRING  })
   side: string;
@@ -19,13 +25,13 @@ export class OrderEntity extends BaseEntity {
   price: number;
 
   @Column({  type: DataType.FLOAT  })
-  qty: number;
-
-  @Column({  type: DataType.FLOAT  })
-  fee_rate: number;
+  order_qty: number;
 
   @Column({  type: DataType.STRING  })
   order_type: string;
+
+  @Column({  type: DataType.FLOAT  })
+  fee_rate: number;
 
   @Column({  type: DataType.FLOAT  })
   exec_price: number;
@@ -45,11 +51,11 @@ export class OrderEntity extends BaseEntity {
   @Column({  type: DataType.FLOAT  })
   leaves_qty: number;
 
-  @Column({  type: DataType.STRING  })
-  last_liquidity_ind: string;
-
   @Column({  type: DataType.FLOAT  })
   closed_size: number;
+
+  @Column({  type: DataType.STRING  })
+  last_liquidity_ind: string;
 
   @Column({  type: DataType.DATE  })
   trade_time: Date;

@@ -1,18 +1,18 @@
 
-export type IOrder = Omit<OrderByBit,'trade_time'> & {
+export type ITradeTransactionEntity = Omit<RecordEntityByBit,'trade_time' | 'symbol'> & {
   pairId: string;
   authorId: string;
   brokerId: string;
   trade_time: Date;
 } 
 
-export type OrderByBit = {
+export type RecordEntityByBit = {
   order_id: string;
   exec_id: string;
   side: string;
   symbol: string;
   price: number;
-  qty: number;
+  order_qty: number;
   order_type: string;
   fee_rate: number;
   exec_price: number;

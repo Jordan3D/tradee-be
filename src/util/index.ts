@@ -3,7 +3,7 @@ import { PairEntity } from 'src/pair/pair.entity';
 import { ITradeOverall, TradeByBit } from 'src/interfaces/trade.interface';
 const fs = require('fs');
 import { IPair } from 'src/interfaces/pair.interface';
-import { IOrder, OrderByBit } from 'src/interfaces/order.interface copy';
+import { ITradeTransactionEntity, RecordEntityByBit } from 'src/interfaces/tradeTransaction.interface';
 
 const restClientOptions = {
   recv_window: 4000
@@ -102,7 +102,7 @@ export type LogItem = {
   
 }
 
-export const transformIntoTradeCreate =(
+export const transformIntoTrade =(
   trade: TradeByBit,
   pair: IPair,
   authorId: string,
@@ -125,15 +125,29 @@ export const transformIntoTradeCreate =(
   notes: []
 });
 
-export const transformIntoOrderCreate =(
-  order: OrderByBit,
+export const transformIntoTT =(
+  order: RecordEntityByBit,
   pair: IPair,
   authorId: string,
   brokerId: string
-):Omit<IOrder , 'id' | 'createdAt' | 'updatedAt'>  => ({
+):Omit<ITradeTransactionEntity , 'id' | 'createdAt' | 'updatedAt'>  => ({
   pairId: pair.id,
   authorId,
   brokerId,
-  ...order,
+  order_id: order.order_id,
+  exec_id: order.exec_id,
+  side: order.side,
+  price: order.price,
+  order_qty: order.order_qty,
+  order_type: order.order_type,
+  fee_rate: order.fee_rate,
+  exec_price: order.exec_price,
+  exec_type: order.exec_type,
+  exec_qty: order.exec_qty,
+  exec_fee: order.exec_fee,
+  exec_value: order.exec_value,
+  leaves_qty: order.leaves_qty,
+  closed_size: order.closed_size,
+  last_liquidity_ind: order.last_liquidity_ind,
   trade_time: new Date(order.trade_time * 1000),
 })
