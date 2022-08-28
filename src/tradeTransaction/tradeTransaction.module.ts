@@ -1,5 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { TradeTransactionController } from './tradeTransaction.controller';
 import { TradeTransactionEntity } from './tradeTransaction.entity';
 import { TradeTransactionService } from './tradeTransaction.service';
 
@@ -9,6 +10,6 @@ import { TradeTransactionService } from './tradeTransaction.service';
   ],
   providers: [TradeTransactionService],
   exports: [TradeTransactionService],
-  controllers: [],
+  controllers: [TradeTransactionController],
 })
 export class TradeTransactionModule {}

@@ -128,11 +128,11 @@ export class TradeService {
   }
 
   async findByIds(
-    { authorId, Ids }:
-      Readonly<{ authorId: string, Ids: string[] }>
+    { authorId, ids }:
+      Readonly<{ authorId: string, ids: string[] }>
   ): Promise<ITradeOverall[]> {
-
-    const data = (await this.rootModel.sequelize.query(
+    const idsString = ids.map(id => `'${id}'`).join(',');
+    const data = ids.length ? (await this.rootModel.sequelize.query(
       `SELECT *  FROM "Trade" trade,
         LATERAL (
            SELECT ARRAY (
@@ -148,10 +148,10 @@ export class TradeService {
                WHERE  notes."parentId" = trade.id
                ) AS notes
             ) n
-        WHERE "authorId"='${authorId}' AND trade.id IN (${Ids.map(id => `'${id}'`).join(',')})
+        WHERE "authorId"='${authorId}' ${idsString ? `AND trade.id IN (${idsString})` : ''}
         `,
       { type: QueryTypes.SELECT }
-    )) as ITradeOverall[];
+    )) as ITradeOverall[] : [];
 
     return data;
   }

@@ -3,7 +3,7 @@ import { PairEntity } from 'src/pair/pair.entity';
 import { ITradeOverall, TradeByBit } from 'src/interfaces/trade.interface';
 const fs = require('fs');
 import { IPair } from 'src/interfaces/pair.interface';
-import { ITradeTransactionEntity, RecordEntityByBit } from 'src/interfaces/tradeTransaction.interface';
+import { ITradeTransaction, RecordEntityByBit } from 'src/interfaces/tradeTransaction.interface';
 
 const restClientOptions = {
   recv_window: 4000
@@ -130,7 +130,7 @@ export const transformIntoTT =(
   pair: IPair,
   authorId: string,
   brokerId: string
-):Omit<ITradeTransactionEntity , 'id' | 'createdAt' | 'updatedAt'>  => ({
+):Omit<ITradeTransaction , 'id' | 'createdAt' | 'updatedAt'>  => ({
   pairId: pair.id,
   authorId,
   brokerId,

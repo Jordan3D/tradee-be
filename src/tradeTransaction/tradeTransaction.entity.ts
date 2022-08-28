@@ -1,5 +1,7 @@
 import { Table, Column, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { BrokerEntity } from 'src/broker/broker.entity';
 import { BaseEntity, UserEntity } from 'src/models';
+import { PairEntity } from 'src/pair/pair.entity';
 
 @Table({ modelName: 'TradeTransaction', freezeTableName: true })
 export class TradeTransactionEntity extends BaseEntity {
@@ -15,11 +17,20 @@ export class TradeTransactionEntity extends BaseEntity {
   @BelongsTo(() => UserEntity)
   author: UserEntity;
 
+  @ForeignKey(() => BrokerEntity)
+  brokerId: string;
+
+  @BelongsTo(() => BrokerEntity)
+  broker: BrokerEntity;
+
   @Column({  type: DataType.STRING  })
   side: string;
 
-  @Column({  type: DataType.STRING  })
-  symbol: string;
+  @ForeignKey(() => PairEntity)
+  pairId: string;
+
+  @BelongsTo(() => PairEntity)
+  pair: PairEntity;
 
   @Column({  type: DataType.FLOAT  })
   price: number;

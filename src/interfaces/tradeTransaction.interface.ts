@@ -1,5 +1,5 @@
 
-export type ITradeTransactionEntity = Omit<RecordEntityByBit,'trade_time' | 'symbol'> & {
+export type ITradeTransaction = Omit<RecordEntityByBit,'trade_time' | 'symbol'> & {
   pairId: string;
   authorId: string;
   brokerId: string;

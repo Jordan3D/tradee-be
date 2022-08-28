@@ -13,7 +13,7 @@ export class NotesService {
 
   async create(
     { parentId, noteIds, parentType }:
-      Readonly<{ noteIds: string[], parentId: string, parentType: 'trade' | 'idea' }>): Promise<NotesEntity[]> {
+      Readonly<{ noteIds: string[], parentId: string, parentType: 'trade' | 'idea' | 'journal'}>): Promise<NotesEntity[]> {
     const result = await this.rootModel.bulkCreate(noteIds.map(item => ({ parentId, noteId: item, parentType })));
     return result.map(item => item.toJSON())
   }

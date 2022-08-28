@@ -14,6 +14,7 @@ import { PairModule } from './pair';
 import { NotesModule } from './notes';
 import { BrokerModule } from './broker';
 import { TradeTransactionModule } from './tradeTransaction';
+import { JournalItemModule } from './journalItem';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { TradeTransactionModule } from './tradeTransaction';
     }),
     AuthModule,
     UsersModule,
+    JournalItemModule,
     TagModule,
     CommentModule,
     NoteModule,

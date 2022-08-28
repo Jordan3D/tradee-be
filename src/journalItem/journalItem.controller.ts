@@ -22,19 +22,20 @@ const jwt = require('jsonwebtoken');
 import { AuthGuard } from '@nestjs/passport';
 import { CreateBody, UpdateBody } from './dto/requests';
 import { ResponseDto } from './dto/responses';
+import { JournalItemService } from './journalItem.service';
 import { Request } from 'express';
 import config from '../config';
 import { getToken } from '../util';
-import { ITrade, ITradeOverall } from 'src/interfaces/trade.interface';
-import { TradeService } from './trade.service';
-import { TradeEntity } from './trade.entity';
+import { IJournalItem } from 'src/interfaces/journalItem.interface';
 
+/**
+ * users controller
+ */
+@Controller('/journal-item')
+export class JournalItemController {
 
-@Controller('/trade')
-export class TradeController {
-
-  private readonly logger = new Logger(TradeController.name);
-  constructor(private readonly rootService: TradeService) { }
+  private readonly logger = new Logger(JournalItemController.name);
+  constructor(private readonly rootService: JournalItemService) { }
 
   @Post('/create')
   async create(
@@ -44,7 +45,7 @@ export class TradeController {
     let createdEntity;
     
     try {
-      const createData = { ...data, authorId: '', isManual: true };
+      const createData = { ...data, authorId: '' };
       const token = getToken(request);
       const payload = jwt.verify(token, config.jwtSecret);
 
@@ -60,60 +61,20 @@ export class TradeController {
 
   // for calendar search
   @UseGuards(AuthGuard('jwt'))
-  @Get('/dateMap')
-  async findByDate(@Req() request: Request, @Query() query):Promise<Record<string,ITrade>> {
+  @Get('/list')
+  async findByDate(@Req() request: Request, @Query() query):Promise<IJournalItem[]> {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
     const {startDate, endDate} = query;
-    const data = await this.rootService.findByDate({startDate, endDate, authorId: payload.userId});
-    let result = {};
-
-    data.forEach(note => {
-      const date = getUnixTime(note.createdAt);
-      result[date] = result[date] ? result[date].push(note) : [];
-    })
-
-    return result;
+    return this.rootService.findByDate({startDate, endDate, authorId: payload.userId});
   }
-
-  // for input search
-  @UseGuards(AuthGuard('jwt'))
-  @Post('/get-ids')
-  async findByIds(@Req() request: Request, @Body() data: string[]):Promise<ITradeOverall[]> {
-    const token = getToken(request);
-    const payload = jwt.verify(token, config.jwtSecret);
-
-    return this.rootService.findByIds({authorId: payload.userId, ids: data})
-  }
-
-   // for input search
-   @UseGuards(AuthGuard('jwt'))
-   @Get('/list')
-   async findBy(@Req() request: Request, @Query() query):Promise<Readonly<{
-     data: ITradeOverall[], total: number, offset: number, limit: number
-   }>> {
-     const token = getToken(request);
-     const payload = jwt.verify(token, config.jwtSecret);
- 
-     try {
-       const [_orderBy] = query.orderBy ? query.orderBy?.split(',') : [];
- 
-       if(_orderBy && !Object.keys(TradeEntity.getAttributes()).includes(_orderBy)){
-         throw new Error('Wrong order params')
-       }
-     }catch(e){
-       throw new BadRequestException(e.message)
-     }
- 
-     return this.rootService.findBy({...query, authorId: payload.userId})
-   }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/:id')
   async findOne(@Param('id') id: string): Promise<ResponseDto> {
     const entity = await this.rootService.getById(id);
     if (entity === undefined) {
-      throw new NotFoundException('Trade not found');
+      throw new NotFoundException('Item not found');
     }
 
     return new ResponseDto(entity);
@@ -127,7 +88,7 @@ export class TradeController {
 
     const entity = await this.rootService.getById(id);
     if (entity === undefined) {
-      throw new NotFoundException('Trade not found');
+      throw new NotFoundException('Item not found');
     }
 
     // TODO: check owner by jwt
@@ -154,7 +115,7 @@ export class TradeController {
 
     const entity = await this.rootService.getById(id);
     if (entity === undefined) {
-      throw new NotFoundException('Trade not found');
+      throw new NotFoundException('Note not found');
     }
 
     // TODO: check author by jwt

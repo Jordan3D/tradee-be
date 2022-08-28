@@ -17,7 +17,7 @@ import { TradeService } from 'src/trade';
 import { transformIntoTrade, transformIntoTT } from 'src/util';
 import { ITradeOverall } from 'src/interfaces/trade.interface';
 import { TradeTransactionService } from 'src/tradeTransaction/tradeTransaction.service';
-import { ITradeTransactionEntity } from 'src/interfaces/tradeTransaction.interface';
+import { ITradeTransaction } from 'src/interfaces/tradeTransaction.interface';
 
 const defaultSync = {pnl: {}, tradeTransactions: {}};
 
@@ -156,7 +156,7 @@ export class BrokerService {
       const syncPnl = lastSync.pnl[pair.title] ? lastSync.pnl[pair.title] : undefined;
       const syncTransactions= lastSync.tradeTransactions[pair.title] ? lastSync.tradeTransactions[pair.title] : undefined;
     
-      let data = {pnl: [] as Omit<ITradeOverall, 'id' | 'createdAt' | 'updatedAt'>[] , tradeTransactions: [] as Omit<ITradeTransactionEntity, 'id' | 'createdAt' | 'updatedAt'>[]}
+      let data = {pnl: [] as Omit<ITradeOverall, 'id' | 'createdAt' | 'updatedAt'>[] , tradeTransactions: [] as Omit<ITradeTransaction, 'id' | 'createdAt' | 'updatedAt'>[]}
 
       while (true) {
         page += 1;
