@@ -5,16 +5,17 @@ import { InjectModel} from '@nestjs/sequelize';
 import { ITag } from '../interfaces/tag.interface';
 import { TagEntity } from 'src/models';
 import { UpdateBody } from './dto/requests';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class TagService {
   
   constructor(
-    @InjectModel(TagEntity) private readonly tagModel: typeof TagEntity
+    @InjectModel(TagEntity) private readonly rootModel: typeof TagEntity
   ) {}
   
   async create(data: Omit<ITag, 'id' | 'createdAt' | 'updatedAt' | 'level'>): Promise<TagEntity> {
-    const parentTag = await this.tagModel.findOne({where: {id: data.parentId}, raw: true})
+    const parentTag = await this.rootModel.findOne({where: {id: data.parentId}, raw: true})
     const dataToCreate = {
       ...data, 
       level: parentTag ? parentTag.level + 1 : 0
@@ -27,7 +28,7 @@ export class TagService {
   }
   
   async getById(id: string, omit?: string[]): Promise<ITag | undefined> {
-    const foundOne = await this.tagModel.findOne({
+    const foundOne = await this.rootModel.findOne({
       where: {id},
       raw: true
     });
@@ -43,15 +44,26 @@ export class TagService {
     return foundOne;
   }
 
+  async getByIds(ids: string[]): Promise<ITag[] | undefined> {
+    const result = await this.rootModel.findAll({
+      where: {id: {
+        [Op.in]: ids,
+      },},
+      raw: true
+    });
+    
+    return result;
+  }
+
   async getAllByAuthor(authorId: string): Promise<ITag[] | undefined> {  
-    return await this.tagModel.findAll({
+    return await this.rootModel.findAll({
       where: {authorId},
       order: [['level','ASC']]
     })
   };
 
   async delete(id: string): Promise<boolean> {    
-    return !! await this.tagModel.destroy({where: {id}});;
+    return !! await this.rootModel.destroy({where: {id}});;
   }
 
   async update(id: string, updates: Omit<UpdateBody, 'id' | 'createdAt' | 'updatedAt' >): Promise<TagEntity | undefined> {
@@ -60,7 +72,7 @@ export class TagService {
     let parent = undefined;
 
     if(updates.parentId){
-      parent = await this.tagModel.findOne({where: {id: updates.parentId}, raw: true})
+      parent = await this.rootModel.findOne({where: {id: updates.parentId}, raw: true})
     }
 
     Object.keys(updates).forEach(key => {
@@ -73,18 +85,18 @@ export class TagService {
     })
 
     try {
-      await this.tagModel.update(dataToUpdate, {where: {id}});
+      await this.rootModel.update(dataToUpdate, {where: {id}});
     } catch (error) {
       return error;
     }
-    return this.tagModel.findOne({
+    return this.rootModel.findOne({
       where: {id},
       raw: true
     });
   }
   
   async remove(id: string): Promise<boolean> {
-    const res = await this.tagModel.destroy({where: {id}});
+    const res = await this.rootModel.destroy({where: {id}});
     return !!res;
   }
 }

@@ -26,7 +26,7 @@ import { JournalItemService } from './journalItem.service';
 import { Request } from 'express';
 import config from '../config';
 import { getToken } from '../util';
-import { IJournalItem } from 'src/interfaces/journalItem.interface';
+import { IJournalItem, IJournalItemFull, IJournalItemOverall } from 'src/interfaces/journalItem.interface';
 
 /**
  * users controller
@@ -62,7 +62,7 @@ export class JournalItemController {
   // for calendar search
   @UseGuards(AuthGuard('jwt'))
   @Get('/list')
-  async findByDate(@Req() request: Request, @Query() query):Promise<IJournalItem[]> {
+  async findByDate(@Req() request: Request, @Query() query):Promise<IJournalItemFull[]> {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
     const {startDate, endDate} = query;
@@ -71,13 +71,13 @@ export class JournalItemController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/:id')
-  async findOne(@Param('id') id: string): Promise<ResponseDto> {
-    const entity = await this.rootService.getById(id);
+  async findOne(@Param('id') id: string): Promise<IJournalItemOverall> {
+    const entity = await this.rootService.findById({id});
     if (entity === undefined) {
       throw new NotFoundException('Item not found');
     }
 
-    return new ResponseDto(entity);
+    return entity;
   }
 
   @UseGuards(AuthGuard('jwt'))

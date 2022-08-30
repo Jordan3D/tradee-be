@@ -1,6 +1,8 @@
 import {IBase} from './base.interface';
 import { INote } from './note.interface';
 import { ITag } from './tag.interface';
+import { ITrade } from './trade.interface';
+import { ITradeTransaction } from './tradeTransaction.interface';
 
 export interface IIdeaSettings {
   color: string;
@@ -25,6 +27,6 @@ export interface IJournalItemFull extends IBase{
   authorId: string;
   tags: ITag[];
   notes: INote[];
-  pnls: string[];
-  transactions: string[];
+  pnls: ITrade[];
+  transactions: ITradeTransaction[];
 }

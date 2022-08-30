@@ -6,12 +6,20 @@ import { TagsModule } from 'src/tags';
 import { NoteEntity } from 'src/note/note.entity';
 import { NotesModule } from 'src/notes';
 import { JournalItemEntity } from './journalItem.entity';
+import { TagModule } from 'src/tag';
+import { NoteModule } from 'src/note';
+import { TradeModule } from 'src/trade';
+import { TradeTransactionModule } from 'src/tradeTransaction';
 
 @Module({
   imports: [
     SequelizeModule.forFeature([JournalItemEntity]),
     forwardRef(() => TagsModule),
-    forwardRef(() => NotesModule)
+    forwardRef(() => TagModule),
+    forwardRef(() => NotesModule),
+    forwardRef(() => NoteModule),
+    forwardRef(() => TradeModule),
+    forwardRef(() => TradeTransactionModule),
   ],
   providers: [JournalItemService],
   exports: [JournalItemService],

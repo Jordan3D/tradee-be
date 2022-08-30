@@ -6,14 +6,11 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import { UpdateBody } from './dto/requests';
 import { TagsService } from 'src/tags/tags.service';
-import { QueryTypes } from 'sequelize';
+import { Op, QueryTypes } from 'sequelize';
 import { TagsEntity } from 'src/models';
 import { ITrade, ITradeOverall, TradeByBit } from 'src/interfaces/trade.interface';
 import { NotesService } from 'src/notes';
 import { TradeEntity } from './trade.entity';
-import { CreateBody } from 'src/tag/dto/requests';
-import { ResponseDto } from './dto/responses';
-
 @Injectable()
 export class TradeService {
 
@@ -73,6 +70,17 @@ export class TradeService {
       })
     }
 
+    return result;
+  }
+
+  async getByIds(ids: string[]): Promise<ITrade[] | undefined> {
+    const result = await this.rootModel.findAll({
+      where: {id: {
+        [Op.in]: ids,
+      },},
+      raw: true
+    });
+    
     return result;
   }
 

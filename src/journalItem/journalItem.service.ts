@@ -10,9 +10,17 @@ import { QueryTypes } from 'sequelize';
 import { TagsEntity } from 'src/models';
 import { JournalItemEntity } from './journalItem.entity';
 import { NotesService } from 'src/notes';
-import { IJournalItem, IJournalItemOverall } from 'src/interfaces/journalItem.interface';
+import { IJournalItem, IJournalItemFull, IJournalItemOverall } from 'src/interfaces/journalItem.interface';
 import { NotesEntity } from 'src/notes/notes.entity';
 import { format } from 'date-fns';
+import { TagService } from 'src/tag';
+import { NoteService } from 'src/note';
+import { ITag } from 'src/interfaces/tag.interface';
+import { INote } from 'src/interfaces/note.interface';
+import { TradeService } from 'src/trade';
+import { TradeTransactionService } from 'src/tradeTransaction';
+import { ITrade } from 'src/interfaces/trade.interface';
+import { ITradeTransaction } from 'src/interfaces/tradeTransaction.interface';
 
 @Injectable()
 export class JournalItemService {
@@ -21,8 +29,16 @@ export class JournalItemService {
     @InjectModel(JournalItemEntity) private readonly rootModel: typeof JournalItemEntity,
     @Inject(forwardRef(() => TagsService))
     private readonly tagsService: TagsService,
+    @Inject(forwardRef(() => TagService))
+    private readonly tagService: TagService,
     @Inject(forwardRef(() => NotesService))
-    private readonly notesService: NotesService
+    private readonly notesService: NotesService,
+    @Inject(forwardRef(() => NoteService))
+    private readonly noteService: NoteService,
+    @Inject(forwardRef(() => TradeService))
+    private readonly tradeService: TradeService,
+    @Inject(forwardRef(() => TradeTransactionService))
+    private readonly transactionService: TradeTransactionService,
   ) {}
   
   async create(data: Omit<IJournalItemOverall, 'id' | 'createdAt' | 'updatedAt' | 'settings'>): Promise<IJournalItemOverall> { 
@@ -81,17 +97,17 @@ export class JournalItemService {
       await this.rootModel.update(updates, {where: {id}});
 
       if(updates.tagsAdded){
-        await this.tagsService.create({parentId: id, tagIds: updates.tagsAdded, parentType: 'note'});
+        await this.tagsService.create({parentId: id, tagIds: updates.tagsAdded, parentType: 'journal'});
       }
       if(updates.tagsDeleted){
         await this.tagsService.delete({parentId: id, tagIds: updates.tagsDeleted});
       }
 
       if(updates.notesAdded){
-        await this.tagsService.create({parentId: id, tagIds: updates.tagsAdded, parentType: 'note'});
+        await this.notesService.create({parentId: id, noteIds: updates.notesAdded, parentType: 'journal'});
       }
       if(updates.notesDeleted){
-        await this.tagsService.delete({parentId: id, tagIds: updates.tagsDeleted});
+        await this.notesService.delete({parentId: id, noteIds: updates.notesDeleted});
       }
     } catch (error) {
       return error;
@@ -108,12 +124,38 @@ export class JournalItemService {
   async findByDate(
     {startDate, endDate, authorId}: 
     Readonly<{startDate: number, endDate: number, authorId: string}>
-    ): Promise<IJournalItem[]> {
-    return await this.rootModel.sequelize.query(
-      `SELECT *  FROM "JournalItem"
+    ): Promise<IJournalItemFull[]> {
+
+    let result: IJournalItemFull[] = [];
+    const list: IJournalItemOverall[] = await this.rootModel.sequelize.query(
+      `SELECT *  FROM "JournalItem" item, LATERAL (
+        SELECT ARRAY (
+           SELECT "tagId"
+           FROM   "Tags" tags
+           WHERE  tags."parentId" = item.id
+           ) AS tags
+        ) t,
+        LATERAL (
+          SELECT ARRAY (
+             SELECT "noteId"
+             FROM   "Notes" notes
+             WHERE  notes."parentId" = item.id
+             ) AS notes
+          ) n
       WHERE "authorId"='${authorId}'
       AND "createdAt" BETWEEN '${format(new Date(startDate * 1000), 'yyyy/MM/dd')}' AND '${format(new Date(endDate * 1000), 'yyyy/MM/dd')}'`
 ,  { type: QueryTypes.SELECT });
+ 
+   result = await Promise.all(list.map(async item => {
+    const itemResult = {...item, tags: [], notes: [], pnls: [], transactions: []} as IJournalItemFull;
+    itemResult.tags = await this.tagService.getByIds(item.tags);
+    itemResult.notes = await this.noteService.getByIds(item.notes);
+    itemResult.pnls = await this.tradeService.getByIds(item.pnls);
+    itemResult.transactions = await this.transactionService.getByIds(item.transactions);
+    return itemResult;
+   }));
+
+   return result;
   }
 
   async findBy(
@@ -134,5 +176,31 @@ export class JournalItemService {
         ORDER BY "createdAt" ASC`,
          { type: QueryTypes.SELECT }
         );
+  }
+
+  async findById(
+    {id}: 
+    Readonly<{id: string}>
+    ): Promise<IJournalItemOverall> {
+
+    const list: IJournalItemOverall[] = await this.rootModel.sequelize.query(
+      `SELECT *  FROM "JournalItem" item, LATERAL (
+        SELECT ARRAY (
+           SELECT "tagId"
+           FROM   "Tags" tags
+           WHERE  tags."parentId" = item.id
+           ) AS tags
+        ) t,
+        LATERAL (
+          SELECT ARRAY (
+             SELECT "noteId"
+             FROM   "Notes" notes
+             WHERE  notes."parentId" = item.id
+             ) AS notes
+          ) n
+      WHERE "id"='${id}'`
+,  { type: QueryTypes.SELECT });
+
+   return list.map(item => ({...item, tags: [], notes: []})).length ? list[0] : undefined;
   }
 }

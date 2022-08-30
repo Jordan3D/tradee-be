@@ -51,8 +51,6 @@ export class NoteController {
 
       createData.authorId = payload.userId;
 
-      console.log(createData);
-
       createdEntity = await this.rootService.create(createData);
     } catch (e) {
       throw new BadRequestException(e);

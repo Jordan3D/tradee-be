@@ -21,19 +21,15 @@ export class UpdateBody {
   @IsArray()
   transactions: string[];
 
-  @IsOptional()
   @IsArray()
   tagsAdded?: string[];
 
-  @IsOptional()
   @IsArray()
   tagsDeleted?: string[];
 
-  @IsOptional()
   @IsArray()
   notesAdded?: string[];
 
-  @IsOptional()
   @IsArray()
   notesDeleted?: string[];
 }

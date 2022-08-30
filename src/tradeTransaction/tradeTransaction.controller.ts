@@ -33,10 +33,7 @@ export class TradeTransactionController {
   @UseGuards(AuthGuard('jwt'))
   @Post('/get-ids')
   async findByIds(@Req() request: Request, @Body() data: string[]): Promise<ITradeTransaction[]> {
-    const token = getToken(request);
-    const payload = jwt.verify(token, config.jwtSecret);
-
-    return this.rootService.findByIds({ authorId: payload.userId, ids: data })
+    return this.rootService.getByIds(data)
   }
 
   // for input search

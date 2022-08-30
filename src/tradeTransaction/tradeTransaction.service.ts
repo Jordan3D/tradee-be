@@ -4,7 +4,7 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import { TradeTransactionEntity } from './tradeTransaction.entity';
 import { ITradeTransaction } from 'src/interfaces/tradeTransaction.interface';
-import { QueryTypes } from 'sequelize';
+import { Op, QueryTypes } from 'sequelize';
 
 @Injectable()
 export class TradeTransactionService {
@@ -30,15 +30,15 @@ export class TradeTransactionService {
     return !!res;
   }
 
-
-  async findByIds(
-    { authorId, ids }:
-      Readonly<{ authorId: string, ids: string[] }>
-  ): Promise<ITradeTransaction[]> {
-
-    const data = ids ? await this.rootModel.findAll({where: {id: ids}, raw: true}) : [];
-
-    return data;
+  async getByIds(ids: string[]): Promise<ITradeTransaction[] | undefined> {
+    const result = await this.rootModel.findAll({
+      where: {id: {
+        [Op.in]: ids,
+      },},
+      raw: true
+    });
+    
+    return result;
   }
 
   async findBy(

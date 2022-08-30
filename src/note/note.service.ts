@@ -59,6 +59,17 @@ export class NoteService {
     return result;
   }
 
+  async getByIds(ids: string[]): Promise<INote[] | undefined> {
+    const result = await this.rootModel.findAll({
+      where: {id: {
+        [Op.in]: ids,
+      },},
+      raw: true
+    });
+    
+    return result;
+  }
+
   async delete(id: string): Promise<boolean> {
     const res = await this.rootModel.destroy({where: {id}});
     
