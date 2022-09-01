@@ -80,7 +80,7 @@ export class NoteController {
   // for input search
   @UseGuards(AuthGuard('jwt'))
   @Get('/list')
-  async findByText(@Req() request: Request, @Query() query):Promise<INote[]> {
+  async findBy(@Req() request: Request, @Query() query):Promise<INote[]> {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
     const {text, limit, lastId} = query;

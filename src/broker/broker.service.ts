@@ -38,7 +38,7 @@ export class BrokerService {
     private readonly tradeTransactionService: TradeTransactionService
   ) { }
 
-  async create(data: Omit<IBroker, 'id' | 'createdAt' | 'updatedAt' | 'isSyncing' | 'lastSync'>): Promise<IBroker> {
+  async create(data: Omit<IBroker, 'id' | 'createdAt' | 'updatedAt' | 'isSyncing' | 'lastSync' | 'isRemoved'>): Promise<IBroker> {
     const dataToCreate = { ...data, author: { id: data.authorId }, isSyncing: false }
     let result;
     try {
@@ -96,7 +96,8 @@ export class BrokerService {
 
   async clearSync(id: string, authorId: string): Promise<boolean> {
     const one = await this.rootModel.findOne({where: {id}, raw: true});
-    if(!one || one.authorId !== authorId){
+
+    if(!one || one.authorId !== authorId || one.isRemoved){
       return false;
     }
 
@@ -114,7 +115,7 @@ export class BrokerService {
   async sync(id: string, authorId: string): Promise<boolean> {
     const one = await this.rootModel.findOne({where: {id}, raw: true});
 
-    if(!one || one.authorId !== authorId){
+    if(!one || one.authorId !== authorId || one.isRemoved){
       return false;
     }
 
@@ -214,6 +215,21 @@ export class BrokerService {
     console.log(`Sync ${id} start`);
 
     processSync();
+    return true;
+  }
+
+  async remove(id: string, authorId: string): Promise<boolean> {
+    const one = await this.rootModel.findOne({where: {id}, raw: true});
+    if(!one || one.authorId !== authorId){
+      return false;
+    }
+
+    try {
+      await this.rootModel.update({isRemoved: true}, { where: { id } });
+    } catch (e){
+      throw e;
+    }
+
     return true;
   }
 }

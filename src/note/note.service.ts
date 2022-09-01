@@ -77,6 +77,7 @@ export class NoteService {
   }
 
   async update(id: string, updates: Omit<UpdateBody, 'id' | 'createdAt' | 'updatedAt' | 'author'>): Promise<INoteOverall | undefined> {
+    console.log(updates);
     try {
       await this.rootModel.update(updates, {where: {id}});
 
@@ -119,7 +120,7 @@ export class NoteService {
               WHERE  tags."parentId" = note.id
               ) AS tags
            ) t
-        WHERE "authorId"='${authorId}'
+        WHERE "authorId"='${authorId}' AND LOWER("title") LIKE LOWER('%${text}%')
         ORDER BY "createdAt" ASC`,
          { type: QueryTypes.SELECT }
         );

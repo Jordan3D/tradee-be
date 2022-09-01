@@ -148,14 +148,14 @@ export class BrokerController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Delete('/:id')
-  async delete(@Param('id') id: string, @Req() request: Request): Promise<boolean> {
+  @Delete('/:id/remove')
+  async remove(@Param('id') id: string, @Req() request: Request): Promise<boolean> {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
 
     const entity = await this.rootService.getById(id);
     if (entity === undefined) {
-      throw new NotFoundException('Trade not found');
+      throw new NotFoundException('Broker not found');
     }
 
     // TODO: check author by jwt
@@ -164,6 +164,7 @@ export class BrokerController {
     }
 
 
-    return this.rootService.delete(id)
+    return this.rootService.remove(id, payload.userId)
   }
+  
 }

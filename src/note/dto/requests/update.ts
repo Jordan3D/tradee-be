@@ -8,6 +8,10 @@ import {
 export class UpdateBody {
   @IsOptional()
   @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
   content?: string;
 
   @IsOptional()

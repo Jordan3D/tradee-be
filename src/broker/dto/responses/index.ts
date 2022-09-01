@@ -16,6 +16,8 @@ export class ResponseDto implements Omit<IBroker, 'api_key' | 'secret_key' | 'la
   
   isSyncing: boolean;
 
+  isRemoved: boolean;
+
   constructor(entity: IBroker) {
     Object.keys(entity).forEach(key => {
         this[key] = entity[key];
@@ -31,6 +33,7 @@ export class ResponseBroker implements IBroker{
   createdAt: Date;
   updatedAt: Date;
   lastSync: string;
+  isRemoved: boolean;
 
   @Exclude()
   api_key: string;

@@ -21,4 +21,5 @@ export interface IBroker extends IBase{
     authorId: string;
     isSyncing: boolean;
     lastSync: string;
+    isRemoved: boolean;
 }
