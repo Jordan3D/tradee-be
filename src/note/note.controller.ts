@@ -80,11 +80,11 @@ export class NoteController {
   // for input search
   @UseGuards(AuthGuard('jwt'))
   @Get('/list')
-  async findBy(@Req() request: Request, @Query() query):Promise<INote[]> {
+  async findBy(@Req() request: Request, @Query() query : {text?: string, limit?: number, offset?: number}):Promise<INote[]> {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
-    const {text, limit, lastId} = query;
-    return this.rootService.findBy({text, limit, lastId, authorId: payload.userId})
+    const {text, limit, offset} = query;
+    return this.rootService.findBy({text, limit, offset, authorId: payload.userId})
   }
 
   @UseGuards(AuthGuard('jwt'))

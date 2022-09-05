@@ -10,7 +10,6 @@ import {
   UnauthorizedException,
   UseGuards,
   Req,
-  Query,
   Delete,
   UseInterceptors,
   ClassSerializerInterceptor,
@@ -22,7 +21,7 @@ const jwt = require('jsonwebtoken');
 
 import { AuthGuard } from '@nestjs/passport';
 import { CreateBody, SyncBody, UpdateBody } from './dto/requests';
-import { ResponseBroker, ResponseDto } from './dto/responses';
+import { ResponseBroker } from './dto/responses';
 import { Request } from 'express';
 import config from '../config';
 import { getToken } from '../util';
@@ -41,7 +40,7 @@ export class BrokerController {
   async create(
     @Body() data: CreateBody,
     @Req() request: Request
-  ): Promise<ResponseDto> {
+  ): Promise<ResponseBroker> {
     let createdEntity;
     
     try {
@@ -56,7 +55,7 @@ export class BrokerController {
       throw new BadRequestException(e);
     }
 
-    return new ResponseDto(createdEntity);
+    return new ResponseBroker(createdEntity);
   }
 
   // for input search
@@ -111,18 +110,18 @@ export class BrokerController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/:id')
-  async findOne(@Param('id') id: string): Promise<ResponseDto> {
+  async findOne(@Param('id') id: string): Promise<ResponseBroker> {
     const entity = await this.rootService.getById(id);
     if (entity === undefined) {
       throw new NotFoundException('Broker not found');
     }
 
-    return new ResponseDto(entity);
+    return new ResponseBroker(entity);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/:id')
-  async update(@Param('id') id: string, @Body() data: UpdateBody, @Req() request: Request): Promise<ResponseDto> {
+  async update(@Param('id') id: string, @Body() data: UpdateBody, @Req() request: Request): Promise<ResponseBroker> {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
 
@@ -144,7 +143,7 @@ export class BrokerController {
       throw new BadRequestException(e);
     }
 
-    return new ResponseDto(updatedEntity);
+    return new ResponseBroker(updatedEntity);
   }
 
   @UseGuards(AuthGuard('jwt'))

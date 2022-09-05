@@ -8,17 +8,31 @@ import {
 export class UpdateBody {
   @IsOptional()
   @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
   content?: string;
 
   @IsOptional()
-  @IsInt()
-  rating?: number;
+  @IsArray()
+  photos: string[];
 
-  @IsOptional()
   @IsArray()
   tagsAdded?: string[];
 
-  @IsOptional()
   @IsArray()
   tagsDeleted?: string[];
+
+  @IsArray()
+  notesAdded?: string[];
+
+  @IsArray()
+  notesDeleted?: string[];
+
+  @IsArray()
+  photosAdded?: string[];
+
+  @IsArray()
+  photosDeleted?: string[];
 }

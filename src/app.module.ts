@@ -15,6 +15,8 @@ import { NotesModule } from './notes';
 import { BrokerModule } from './broker';
 import { TradeTransactionModule } from './tradeTransaction';
 import { JournalItemModule } from './journalItem';
+import { IdeaModule } from './idea';
+import { FileModule } from './file/file.module';
 
 @Module({
   imports: [
@@ -32,6 +34,7 @@ import { JournalItemModule } from './journalItem';
       synchronize: true,
     }),
     AuthModule,
+    FileModule,
     UsersModule,
     JournalItemModule,
     TagModule,
@@ -41,7 +44,8 @@ import { JournalItemModule } from './journalItem';
     PairModule,
     TradeModule,
     TradeTransactionModule,
-    BrokerModule
+    BrokerModule,
+    IdeaModule
   ],
   controllers: [AppController],
   providers: [AppService],

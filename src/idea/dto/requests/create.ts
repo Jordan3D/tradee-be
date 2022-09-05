@@ -15,4 +15,12 @@ export class CreateBody {
   @IsOptional()
   @IsArray()
   tags: string[];
+
+  @IsOptional()
+  @IsArray()
+  notes: string[];
+
+  @IsOptional()
+  @IsArray()
+  photos: string[];
 }

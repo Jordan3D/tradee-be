@@ -1,27 +1,35 @@
 import {IBase} from './base.interface';
-import { IComment } from './comment.interface';
+import { IFile } from './file.interface';
+import { INote } from './note.interface';
 import { ITag } from './tag.interface';
-
-export interface IIdeaSettings {
-  color: string;
-}
 
 export interface IIdea extends IBase{
   title: string;
   content: string;
   authorId: string;
+  photos: string[];
 }
 
-export interface IIdeaOverall extends IIdea{
+export interface ICreateIdea{
+  title: string;
+  content: string;
+  authorId: string;
   tags: string[];
-  // comments: string[];
+  notes: string[];
+  photos: string[];
+}
+
+export interface IIdeaOverall extends Omit<IIdea, 'photos'>{
+  tags: string[];
+  notes: string[];
+  photos: IFile[];
 }
 
 export interface IIdeaFull extends IBase{
   title: string;
   content: string;
   authorId: string;
-  rating: number;
-  comments: IComment[];
+  photos: IFile[];
+  notes: INote[];
   tags: ITag[];
 }

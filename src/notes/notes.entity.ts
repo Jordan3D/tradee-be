@@ -19,5 +19,5 @@ export class NotesEntity extends Model{
   parentId: string;
 
   @Column({ type: 'varchar'})
-  parentType: 'trade' | 'idea'
+  parentType: 'trade' | 'idea' | 'journal'
 }

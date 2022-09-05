@@ -1,4 +1,5 @@
 import { IIdea } from 'src/interfaces/idea.interface';
+import { INote } from 'src/interfaces/note.interface';
 
 export class ResponseDto implements IIdea {
   
@@ -10,13 +11,11 @@ export class ResponseDto implements IIdea {
 
   authorId: string;
 
-  settings: any;
-
   tags: string[];
 
-  comments: string[];
+  notes: string[];
 
-  rating: number;
+  photos: string[];
   
   createdAt: Date;
   
@@ -27,4 +26,9 @@ export class ResponseDto implements IIdea {
         this[key] = entity[key];
     })
   }
+}
+
+export class UploadedPhotoDto {
+  key: string;
+  url: string;
 }

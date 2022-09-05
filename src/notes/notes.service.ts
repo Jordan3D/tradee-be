@@ -1,6 +1,7 @@
 import {
   Injectable
 } from '@nestjs/common';
+import { Op } from 'sequelize';
 import { InjectModel } from '@nestjs/sequelize';
 import { NotesEntity } from './notes.entity';
 
@@ -24,9 +25,8 @@ export class NotesService {
     return result ? result.map(item => item.noteId) : [];
   }
 
-  async delete({ parentId, noteIds }: Readonly<{ noteIds: string[], parentId: string }>): Promise<boolean> {
-    const res = await this.rootModel.destroy({ where: { parentId, noteId: noteIds } });
-
+  async delete({parentId, noteIds = []}: Readonly<{noteIds?: string[], parentId: string}>): Promise<boolean> {
+    const res = await this.rootModel.destroy({where: {parentId, noteId: {[Op.in]: noteIds}}});
     return !!res;
   }
 }

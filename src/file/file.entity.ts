@@ -1,21 +1,24 @@
 import { Table, Column, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { UserEntity } from 'src/models';
 import { BaseEntity } from '../models/base.entity';
-import { UserEntity } from '../user/user.entity';
 
-@Table({ modelName: 'Idea', freezeTableName: true })
-export class IdeaEntity extends BaseEntity {
+@Table({ modelName: 'File', freezeTableName: true })
+export class FileEntity extends BaseEntity {
   @Column({ type: DataType.STRING})
-  title: string;
+  key: string;
 
   @Column({ type: DataType.STRING })
-  content: string;
+  url: string;
 
   @ForeignKey(() => UserEntity)
   authorId: string;
 
   @BelongsTo(() => UserEntity)
-  author: UserEntity
+  author: UserEntity;
 
-  @Column({ type: DataType.JSON})
-  photos: string[];
+  @Column({type: DataType.UUID})
+  parentId?: string;
+
+  @Column({ type: 'varchar'})
+  parentType?: 'idea'
 }
