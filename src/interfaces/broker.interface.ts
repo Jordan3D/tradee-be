@@ -2,7 +2,8 @@ import {IBase} from './base.interface';
 import { IPair } from './pair.interface';
 
 export enum BrokerTypeEnum {
-    ByBitFutures = 'ByBitFutures'
+    ByBitFutures = 'ByBitFutures',
+    ByBitFuturesTestNet = 'ByBitFutures_'
 }
 
 export type BrokerLog = {

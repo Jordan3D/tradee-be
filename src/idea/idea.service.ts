@@ -148,8 +148,8 @@ export class IdeaService {
   }
 
   async findBy(
-    { text, authorId, offset, limit }:
-      Readonly<{ text?: string, authorId: string, limit?: number, offset?: number }>
+    { text, authorId, offset, limit, lastId }:
+      Readonly<{ text?: string, authorId: string, limit?: number, offset?: number, lastId?: string }>
   ): Promise<IIdeaOverall[]> {
     const result =  await this.rootModel.sequelize.query(
       `SELECT *  FROM "Idea" idea,
@@ -168,9 +168,11 @@ export class IdeaService {
               ) AS notes
            ) n
         WHERE "authorId"='${authorId}' AND LOWER("title") LIKE LOWER('%${text}%')
-        ${limit ? 'LIMIT ' + limit : ''}
-        ${offset ? 'OFFSET ' + offset : ''}
-        ORDER BY "createdAt" ASC`,
+        ${text ? `AND LOWER("title") LIKE LOWER('%${text}%')` : ''}
+        ${lastId ? `AND idea.id < '${lastId}'` : ''}
+        ORDER BY "createdAt" DESC
+        ${limit ? `LIMIT ${limit}` : ''}
+        ${offset ? `OFFSET ${offset}` : ''}`,
       { type: QueryTypes.SELECT }
     );
 

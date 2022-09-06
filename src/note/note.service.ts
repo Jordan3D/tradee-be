@@ -107,9 +107,10 @@ export class NoteService {
   }
 
   async findBy(
-    {text, authorId, offset, limit}: 
-    Readonly<{text?: string, authorId: string, limit?: number, offset?: number}>
+    {text, authorId, offset, limit, lastId}: 
+    Readonly<{text?: string, authorId: string, limit?: number, offset?: number, lastId?: string}>
     ): Promise<INote[]> {
+      console.log(limit,lastId);
       return await this.rootModel.sequelize.query(
         `SELECT *  FROM "Note" note,
         LATERAL (
@@ -119,10 +120,12 @@ export class NoteService {
               WHERE  tags."parentId" = note.id
               ) AS tags
            ) t
-        WHERE "authorId"='${authorId}' AND LOWER("title") LIKE LOWER('%${text}%')
-        ${limit ? 'LIMIT '+ limit : ''}
-        ${offset ? 'OFFSET '+ offset : ''}
-        ORDER BY "createdAt" DESC`,
+        WHERE "authorId"='${authorId}' 
+        ${text ? `AND LOWER("title") LIKE LOWER('%${text}%')` : ''}
+        ${lastId ? `AND note.id < '${lastId}'` : ''}
+        ORDER BY "createdAt" DESC
+        ${limit ? `LIMIT ${limit}` : ''}
+        ${offset ? `OFFSET ${offset}` : ''}`,
          { type: QueryTypes.SELECT }
         );
   }

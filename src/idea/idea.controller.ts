@@ -69,8 +69,7 @@ export class IdeaController {
   async findBy(@Req() request: Request, @Query() query : {text?: string, limit?: number, offset?: number}):Promise<IIdeaOverall[]> {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
-    const {text, limit, offset} = query;
-    return this.rootService.findBy({text, limit, offset, authorId: payload.userId})
+    return this.rootService.findBy({...query, authorId: payload.userId})
   }
 
   @UseGuards(AuthGuard('jwt'))

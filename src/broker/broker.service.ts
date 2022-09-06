@@ -9,7 +9,7 @@ import { UpdateBody } from './dto/requests';
 import { TagsService } from 'src/tags/tags.service';
 import { NotesService } from 'src/notes';
 import { BrokerEntity } from './broker.entity';
-import { IBroker, TLastSync } from 'src/interfaces/broker.interface';
+import { BrokerTypeEnum, IBroker, TLastSync } from 'src/interfaces/broker.interface';
 import { LinearClient } from 'bybit-api';
 import { PairService } from 'src/pair';
 import { IPair } from 'src/interfaces/pair.interface';
@@ -119,16 +119,26 @@ export class BrokerService {
       return false;
     }
 
+    let url;
+    let useLivenet;
+
+    if(one.broker_type === BrokerTypeEnum.ByBitFutures){
+      url = 'https://api.bybit.com';
+      useLivenet = true;
+    }
+    if(one.broker_type === BrokerTypeEnum.ByBitFuturesTestNet){
+      url = 'https://api-testnet.bybit.com';
+      useLivenet = false
+    }
+
     const config = {
-      url: 'https://api.bybit.com',
+      url,
       signature: '11a4b5a44c99e87707a9fb3eac61475c20f08097bc72c3da47134fa3e6120594'
     }
 
     const restClientOptions = {
       recv_window: 4000
     };
-
-    const useLivenet = true;
 
     const client = new LinearClient(
       one.api_key,
