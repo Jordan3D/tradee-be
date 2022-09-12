@@ -28,7 +28,6 @@ export class NoteService {
 
     if(result && result.id && data.tags){
       const tagsList = await this.tagsService.create({tagIds: data.tags, parentId: result.id, parentType: 'note'});
-      console.log(tagsList)
       tags = tagsList.map((tL : TagsEntity) => tL.tagId) || [];
     }
     
@@ -77,7 +76,6 @@ export class NoteService {
   }
 
   async update(id: string, updates: Omit<UpdateBody, 'id' | 'createdAt' | 'updatedAt' | 'author'>): Promise<INoteOverall | undefined> {
-    console.log(updates);
     try {
       await this.rootModel.update(updates, {where: {id}});
 
@@ -110,7 +108,7 @@ export class NoteService {
     {text, authorId, offset, limit, lastId}: 
     Readonly<{text?: string, authorId: string, limit?: number, offset?: number, lastId?: string}>
     ): Promise<INote[]> {
-      console.log(limit,lastId);
+
       return await this.rootModel.sequelize.query(
         `SELECT *  FROM "Note" note,
         LATERAL (

@@ -32,7 +32,7 @@ export class TradeService {
 
     if (result && result.id && data.tags) {
       const tagsList = await this.tagsService.create({ tagIds: data.tags, parentId: result.id, parentType: 'note' });
-      console.log(tagsList)
+
       tags = tagsList.map((tL: TagsEntity) => tL.tagId) || [];
     }
 

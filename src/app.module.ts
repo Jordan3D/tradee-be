@@ -17,6 +17,7 @@ import { TradeTransactionModule } from './tradeTransaction';
 import { JournalItemModule } from './journalItem';
 import { IdeaModule } from './idea';
 import { FileModule } from './file/file.module';
+import config from 'src/config';
 
 @Module({
   imports: [
@@ -24,12 +25,8 @@ import { FileModule } from './file/file.module';
       rootPath: path.join(__dirname, '..', 'static'),
     }),
     SequelizeModule.forRoot({
+      ...config.dbConfig,
       dialect: 'postgres',
-      host: "127.0.0.1",
-      port: 5432,
-      username: "igoryovka",
-      password: "1111",
-      database: "postgres",
       autoLoadModels: true,
       synchronize: true,
     }),
