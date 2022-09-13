@@ -7,7 +7,7 @@ export class IdeaEntity extends BaseEntity {
   @Column({ type: DataType.STRING})
   title: string;
 
-  @Column({ type: DataType.STRING })
+  @Column({ type: DataType.TEXT })
   content: string;
 
   @ForeignKey(() => UserEntity)

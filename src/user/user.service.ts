@@ -20,6 +20,9 @@ export class UsersService {
   ) {}
 
   async create(data: Omit<IUser, 'id' | 'createdAt' | 'updatedAt' | 'config'>): Promise<UserEntity> {
+    if(data.email){
+      data.email = data.email.toLowerCase();
+    }
     if (await this.getByEmail(data.email))
       throw new ConflictException('User with provided email already exists');
       

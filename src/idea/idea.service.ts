@@ -6,12 +6,10 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import { UpdateBody } from './dto/requests';
 import { IdeaEntity } from './idea.entity';
-import { INote } from 'src/interfaces/note.interface';
 import { TagsService } from 'src/tags/tags.service';
 import { Op, QueryTypes } from 'sequelize';
 import { TagsEntity } from 'src/models';
 import { NotesService } from 'src/notes';
-import config from '../config/index';
 import { ICreateIdea, IIdea, IIdeaOverall } from 'src/interfaces/idea.interface';
 import { NotesEntity } from 'src/notes/notes.entity';
 import { IFile } from 'src/interfaces/file.interface';
@@ -151,6 +149,11 @@ export class IdeaService {
     { text, authorId, offset, limit, lastId }:
       Readonly<{ text?: string, authorId: string, limit?: number, offset?: number, lastId?: string }>
   ): Promise<IIdeaOverall[]> {
+    let lastItem;
+    if(lastId){
+      lastItem = await this.rootModel.findOne({where: {id: lastId}, raw: true});
+    }
+   
     const result =  await this.rootModel.sequelize.query(
       `SELECT *  FROM "Idea" idea,
         LATERAL (
@@ -167,9 +170,9 @@ export class IdeaService {
               WHERE  notes."parentId" = idea.id
               ) AS notes
            ) n
-        WHERE "authorId"='${authorId}' AND LOWER("title") LIKE LOWER('%${text}%')
+        WHERE "authorId"='${authorId}'
         ${text ? `AND LOWER("title") LIKE LOWER('%${text}%')` : ''}
-        ${lastId ? `AND idea.id < '${lastId}'` : ''}
+        ${lastItem ? `AND idea."createdAt" < '${new Date(lastItem.createdAt).toISOString()}'` : ''}
         ORDER BY "createdAt" DESC
         ${limit ? `LIMIT ${limit}` : ''}
         ${offset ? `OFFSET ${offset}` : ''}`,

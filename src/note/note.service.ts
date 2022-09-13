@@ -108,6 +108,10 @@ export class NoteService {
     {text, authorId, offset, limit, lastId}: 
     Readonly<{text?: string, authorId: string, limit?: number, offset?: number, lastId?: string}>
     ): Promise<INote[]> {
+      let lastItem;
+      if(lastId){
+        lastItem = await this.rootModel.findOne({where: {id: lastId}, raw: true});
+      }
 
       return await this.rootModel.sequelize.query(
         `SELECT *  FROM "Note" note,
@@ -120,7 +124,7 @@ export class NoteService {
            ) t
         WHERE "authorId"='${authorId}' 
         ${text ? `AND LOWER("title") LIKE LOWER('%${text}%')` : ''}
-        ${lastId ? `AND note.id < '${lastId}'` : ''}
+        ${lastItem ? `AND note."createdAt" < '${new Date(lastItem.createdAt).toISOString()}'` : ''}
         ORDER BY "createdAt" DESC
         ${limit ? `LIMIT ${limit}` : ''}
         ${offset ? `OFFSET ${offset}` : ''}`,

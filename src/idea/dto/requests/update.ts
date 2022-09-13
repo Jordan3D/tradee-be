@@ -16,23 +16,25 @@ export class UpdateBody {
 
   @IsOptional()
   @IsArray()
-  photos: string[];
-
-  @IsArray()
   tagsAdded?: string[];
 
+  @IsOptional()
   @IsArray()
   tagsDeleted?: string[];
 
+  @IsOptional()
   @IsArray()
   notesAdded?: string[];
 
+  @IsOptional()
   @IsArray()
   notesDeleted?: string[];
 
+  @IsOptional()
   @IsArray()
   photosAdded?: string[];
 
+  @IsOptional()
   @IsArray()
   photosDeleted?: string[];
 }
