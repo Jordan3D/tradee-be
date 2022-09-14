@@ -77,7 +77,6 @@ export class NoteController {
     return result;
   }
 
-  // for input search
   @UseGuards(AuthGuard('jwt'))
   @Get('/list')
   async findBy(@Req() request: Request, @Query() query : {text?: string, limit?: number, offset?: number, lastId?: string}):Promise<INote[]> {

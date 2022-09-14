@@ -4,7 +4,7 @@ import { FileEntity } from './file.entity';
 import config from '../config/index';
 import { InjectModel } from '@nestjs/sequelize';
 import { IFile } from 'src/interfaces/file.interface';
-import { Op } from 'sequelize';
+import { Op, QueryTypes } from 'sequelize';
 
 /** user service */
 @Injectable()
@@ -39,8 +39,32 @@ export class FileService {
   async setParent(id: string, parentId: string, parentType: 'idea'): Promise<boolean> {
     return !!this.rootModel.update({parentId, parentType}, { where: { id } });
   }
+
+  async findBy(
+    {text, authorId, limit, lastId}: 
+    Readonly<{text?: string, authorId: string, limit?: number, lastId?: string}>
+    ): Promise<IFile[]> {
+      let lastItem;
+      if(lastId){
+        lastItem = await this.rootModel.findOne({where: {id: lastId}, raw: true});
+      }
+
+      return await this.rootModel.sequelize.query(
+        `SELECT *  FROM "File" file
+        WHERE "authorId"='${authorId}' 
+        ${text ? `AND LOWER("key") LIKE LOWER('%${text}%')` : ''}
+        ${lastItem ? `AND file."createdAt" < '${new Date(lastItem.createdAt).toISOString()}'` : ''}
+        ORDER BY "createdAt" DESC
+        ${limit ? `LIMIT ${limit}` : ''}`,
+         { type: QueryTypes.SELECT }
+        );
+  }
+
+  async keyCheckIfExist({authorId, key}: {key: string, authorId: string}): Promise<boolean> {
+    return !!(await this.rootModel.findOne({where: {authorId, key}, raw: true}));
+  };
   
-  async uploadPublicFile(file: Buffer, key: string, authorId: string): Promise<FileEntity>{
+  async uploadPublicFile({file, key, authorId}: {file: Buffer, key: string, authorId: string}): Promise<FileEntity>{
     const s3 = new S3();
     const uploadResult = await s3.upload({
       Bucket: config.aws.bucket,

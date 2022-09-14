@@ -91,7 +91,7 @@ module.exports = {
         allowNull: false,
         primaryKey: true
       },
-      parentId: Sequelize.STRING,
+      parentId: Sequelize.UUID,
       parentType: Sequelize.STRING,
       noteId: {
         type: Sequelize.UUID,

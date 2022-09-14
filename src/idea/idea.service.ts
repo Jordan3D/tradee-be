@@ -150,48 +150,54 @@ export class IdeaService {
       Readonly<{ text?: string, authorId: string, limit?: number, offset?: number, lastId?: string }>
   ): Promise<IIdeaOverall[]> {
     let lastItem;
-    if(lastId){
-      lastItem = await this.rootModel.findOne({where: {id: lastId}, raw: true});
-    }
-   
-    const result =  await this.rootModel.sequelize.query(
-      `SELECT *  FROM "Idea" idea,
-        LATERAL (
-           SELECT ARRAY (
-              SELECT "tagId"
-              FROM   "Tags" tags
-              WHERE  tags."parentId" = idea.id
-              ) AS tags
-           ) t,
-        LATERAL (
-           SELECT ARRAY (
-              SELECT "noteId"
-              FROM   "Notes" notes
-              WHERE  notes."parentId" = idea.id
-              ) AS notes
-           ) n
-        WHERE "authorId"='${authorId}'
-        ${text ? `AND LOWER("title") LIKE LOWER('%${text}%')` : ''}
-        ${lastItem ? `AND idea."createdAt" < '${new Date(lastItem.createdAt).toISOString()}'` : ''}
-        ORDER BY "createdAt" DESC
-        ${limit ? `LIMIT ${limit}` : ''}
-        ${offset ? `OFFSET ${offset}` : ''}`,
-      { type: QueryTypes.SELECT }
-    );
-
-    return Promise.all(result.map(async(idea: IIdeaOverall) => ({
-      ...idea,
-      photos: await this.fileService.getByParentId(idea.id)
-    })))
     
+    try {
+      if(lastId){
+        lastItem = await this.rootModel.findOne({where: {id: lastId}, raw: true});
+      }
+     
+      const result =  await this.rootModel.sequelize.query(
+        `SELECT *  FROM "Idea" idea,
+        LATERAL (
+          SELECT ARRAY (
+             SELECT "noteId"
+             FROM   "Notes" notes
+             WHERE  notes."parentId" = idea.id
+             ) AS notes
+          ) t,
+          LATERAL (
+             SELECT ARRAY (
+                SELECT "noteId"
+                FROM   "Notes" notes
+                WHERE  notes."parentId" = idea.id
+                ) AS notes
+             ) n
+          WHERE "authorId"='${authorId}'
+          ${text ? `AND LOWER("title") LIKE LOWER('%${text}%')` : ''}
+          ${lastItem ? `AND idea."createdAt" < '${new Date(lastItem.createdAt).toISOString()}'` : ''}
+          ORDER BY "createdAt" DESC
+          ${limit ? `LIMIT ${limit}` : ''}
+          ${offset ? `OFFSET ${offset}` : ''}`,
+        { type: QueryTypes.SELECT }
+      );
+
+      console.log(result);
+  
+      return Promise.all(result.map(async(idea: IIdeaOverall) => ({
+        ...idea,
+        photos: await this.fileService.getByParentId(idea.id)
+      })))
+    }catch (error) {
+      return error;
+    }
   }
 
   async uploadPhoto(argsData: { authorId: string, file: Buffer, name: string }): Promise<IFile> {
     try {
       const { authorId, file, name } = argsData;
-      const fileName = `${authorId}_file_${name}`;
+      const key = `${authorId}_file_${name}`;
 
-      return await this.fileService.uploadPublicFile(file, fileName, authorId);
+      return await this.fileService.uploadPublicFile({file, key, authorId});
     } catch (error) {
       return error;
     }

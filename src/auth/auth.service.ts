@@ -40,7 +40,7 @@ export class AuthService {
     let user: UserEntity | undefined;
     // if "identityString" is Email
     if(validate(identityString)){
-      user = await this.usersService.getByEmail(identityString);
+      user = await this.usersService.getByEmail(identityString.toLowerCase());
     } else {
       user = await this.usersService.getByUsername(identityString);
     }
