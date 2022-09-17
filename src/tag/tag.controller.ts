@@ -10,7 +10,8 @@ import {
   UnauthorizedException,
   UseGuards,
   Req,
-  Delete
+  Delete,
+  Query
 } from '@nestjs/common';
 
 const jwt = require('jsonwebtoken');
@@ -55,12 +56,12 @@ export class TagController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/list')
-  async findAllByUser( @Req() request: Request): Promise<ITag[]>{
+  async findAllByUser( @Req() request: Request,  @Query() query : {text?: string}): Promise<ITag[]>{
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
     payload.userId;
     
-    return this.tagService.getAllByAuthor(payload.userId);
+    return this.tagService.getAllBy(payload.userId, query.text);
   }
 
   @UseGuards(AuthGuard('jwt'))

@@ -146,24 +146,26 @@ export class IdeaService {
   }
 
   async findBy(
-    { text, authorId, offset, limit, lastId }:
-      Readonly<{ text?: string, authorId: string, limit?: number, offset?: number, lastId?: string }>
-  ): Promise<IIdeaOverall[]> {
+    { text, authorId, offset, limit, lastId , tags}:
+      Readonly<{ text?: string, authorId: string, limit?: number, offset?: number, lastId?: string, tags?: string[] }>
+  ): Promise<{data: IIdeaOverall[], isLast?: boolean, total?: number}> {
     let lastItem;
     
     try {
       if(lastId){
         lastItem = await this.rootModel.findOne({where: {id: lastId}, raw: true});
       }
+
+      //   ${tags ? `AND idea.id IN ( SELECT "parentId" FROM "Tags" WHERE "tagId" IN (${tags.map(t => `'${t}'`).join(',')}))` : ''}
      
-      const result =  await this.rootModel.sequelize.query(
+      let result =  await this.rootModel.sequelize.query(
         `SELECT *  FROM "Idea" idea,
         LATERAL (
           SELECT ARRAY (
-             SELECT "noteId"
-             FROM   "Notes" notes
-             WHERE  notes."parentId" = idea.id
-             ) AS notes
+             SELECT "tagId"
+             FROM   "Tags" tags
+             WHERE  tags."parentId" = idea.id
+             ) AS tags
           ) t,
           LATERAL (
              SELECT ARRAY (
@@ -171,22 +173,41 @@ export class IdeaService {
                 FROM   "Notes" notes
                 WHERE  notes."parentId" = idea.id
                 ) AS notes
-             ) n
+             ) n${offset ? `, count(*) OVER() AS full_count` : ''}
           WHERE "authorId"='${authorId}'
           ${text ? `AND LOWER("title") LIKE LOWER('%${text}%')` : ''}
           ${lastItem ? `AND idea."createdAt" < '${new Date(lastItem.createdAt).toISOString()}'` : ''}
           ORDER BY "createdAt" DESC
-          ${limit ? `LIMIT ${limit}` : ''}
+          ${limit ? `LIMIT ${limit + 1}` : ''}
           ${offset ? `OFFSET ${offset}` : ''}`,
         { type: QueryTypes.SELECT }
       );
 
-      console.log(result);
+      const next = {} as {total?: number, isLast?: boolean};
+
+      if(tags && tags.length){
+        result = result.filter((item: IIdeaOverall) => item.tags.length ? tags.every(t => item.tags.includes(t)): false)
+      }
   
-      return Promise.all(result.map(async(idea: IIdeaOverall) => ({
-        ...idea,
-        photos: await this.fileService.getByParentId(idea.id)
-      })))
+      if(offset){
+        next.total =  (result[0] as IIdeaOverall & {full_count: number}).full_count;
+        result.forEach((item: IIdeaOverall & {full_count: number}) => delete item.full_count)
+      } else {
+        if(limit >= result.length){
+          next.isLast = true;
+        } else {
+          next.isLast = false;
+          result.pop();
+        }      
+      }
+
+      return {
+        ...next,
+        data: await Promise.all(result.map(async(idea: IIdeaOverall) => ({
+          ...idea,
+          photos: await this.fileService.getByParentId(idea.id)
+        })))
+      }
     }catch (error) {
       return error;
     }

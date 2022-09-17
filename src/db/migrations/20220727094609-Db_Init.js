@@ -93,6 +93,8 @@ module.exports = {
       },
       parentId: Sequelize.UUID,
       parentType: Sequelize.STRING,
+      createdAt: Sequelize.DATE,
+      updatedAt: Sequelize.DATE,
       noteId: {
         type: Sequelize.UUID,
         references: {
@@ -233,6 +235,8 @@ module.exports = {
       },
       parentId: Sequelize.UUID,
       parentType: Sequelize.STRING,
+      createdAt: Sequelize.DATE,
+      updatedAt: Sequelize.DATE,
       tagId: {
         type: Sequelize.UUID,
         references: {
@@ -266,8 +270,10 @@ module.exports = {
       openPrice: Sequelize.FLOAT,
       openTradeTime: Sequelize.DATE,
       closePrice: Sequelize.FLOAT,
-      closeTradeTime: Sequelize.DATE,
-      leverage: Sequelize.DATE,
+      closeTradeTime: {  type: Sequelize.DATE,
+        allowNull: true,
+      },
+      leverage: Sequelize.FLOAT,
       pnl: Sequelize.FLOAT,  
       orderType: Sequelize.STRING,  
       execType: Sequelize.STRING,  

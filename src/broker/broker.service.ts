@@ -119,25 +119,18 @@ export class BrokerService {
       return false;
     }
 
-    let url;
     let useLivenet;
 
     if(one.broker_type === BrokerTypeEnum.ByBitFutures){
-      url = 'https://api.bybit.com';
       useLivenet = true;
     }
     if(one.broker_type === BrokerTypeEnum.ByBitFuturesTestNet){
-      url = 'https://api-testnet.bybit.com';
+
       useLivenet = false
     }
 
-    const config = {
-      url,
-      signature: '11a4b5a44c99e87707a9fb3eac61475c20f08097bc72c3da47134fa3e6120594'
-    }
-
     const restClientOptions = {
-      recv_window: 4000
+      recv_window: 1000
     };
 
     const client = new LinearClient(
@@ -172,7 +165,10 @@ export class BrokerService {
       while (true) {
         page += 1;
 
-        const { result } = await client.getClosedPnl({ symbol: pair.title, page, start_time: syncPnl});
+        const { result, ret_msg } = await client.getClosedPnl({ symbol: pair.title, page, start_time: syncPnl});
+        // console.log(ret_msg);
+
+        await (new Promise<void>((resolve) => setTimeout(() => resolve(), 1000) ));
         if (!result?.data)
           break;
 
@@ -189,8 +185,11 @@ export class BrokerService {
       while (true) {
         page += 1;
 
-        const { result } = await client.getTradeRecords({ symbol: pair.title, page, start_time: syncTransactions});
+        const { result, ret_msg } = await client.getTradeRecords({ symbol: pair.title, page, start_time: syncTransactions});
+        // console.log(ret_msg);
         
+
+        await (new Promise<void>((resolve) => setTimeout(() => resolve(), 1000) ));
         if (!result?.data)
           break;
 
@@ -208,7 +207,7 @@ export class BrokerService {
 
         return {
           ...trade,
-          closeTradeTime: order.trade_time
+          closeTradeTime: order?.trade_time ?? null
         }
       })
       //
@@ -222,7 +221,6 @@ export class BrokerService {
 
     // update sync flag on start
     await this.rootModel.update({isSyncing: true}, { where: { id } });
-    console.log(`Sync ${id} start`);
 
     processSync();
     return true;

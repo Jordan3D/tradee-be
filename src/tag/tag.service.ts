@@ -55,15 +55,17 @@ export class TagService {
     return result;
   }
 
-  async getAllByAuthor(authorId: string): Promise<ITag[] | undefined> {  
+  async getAllBy(authorId: string, text: string = ''): Promise<ITag[] | undefined> {  
     return await this.rootModel.findAll({
-      where: {authorId},
+      where: {authorId, title: {
+        [Op.like]: `%${text}%`,
+      }},
       order: [['level','ASC']]
     })
   };
 
   async delete(id: string): Promise<boolean> {    
-    return !! await this.rootModel.destroy({where: {id}});;
+    return !! await this.rootModel.destroy({where: {id}});
   }
 
   async update(id: string, updates: Omit<UpdateBody, 'id' | 'createdAt' | 'updatedAt' >): Promise<TagEntity | undefined> {

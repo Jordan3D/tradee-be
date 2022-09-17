@@ -26,7 +26,7 @@ import { NoteService } from './note.service';
 import { Request } from 'express';
 import config from '../config';
 import { getToken } from '../util';
-import { INote } from 'src/interfaces/note.interface';
+import { INote, INoteOverall } from 'src/interfaces/note.interface';
 
 /**
  * users controller
@@ -79,7 +79,8 @@ export class NoteController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/list')
-  async findBy(@Req() request: Request, @Query() query : {text?: string, limit?: number, offset?: number, lastId?: string}):Promise<INote[]> {
+  async findBy(@Req() request: Request, @Query() query : {text?: string, limit?: number, offset?: number, lastId?: string, tags?: string[]})
+  :Promise<{data: INoteOverall[], isLast?: boolean, total?: number}> {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
     return this.rootService.findBy({...query, authorId: payload.userId})
