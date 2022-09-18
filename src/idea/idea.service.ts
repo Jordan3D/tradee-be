@@ -146,8 +146,8 @@ export class IdeaService {
   }
 
   async findBy(
-    { text, authorId, offset, limit, lastId , tags}:
-      Readonly<{ text?: string, authorId: string, limit?: number, offset?: number, lastId?: string, tags?: string[] }>
+    { text, authorId, offset, limit, lastId , tags, notes}:
+      Readonly<{ text?: string, authorId: string, limit?: number, offset?: number, lastId?: string, tags?: string[], notes?: string[] }>
   ): Promise<{data: IIdeaOverall[], isLast?: boolean, total?: number}> {
     let lastItem;
     
@@ -187,6 +187,10 @@ export class IdeaService {
 
       if(tags && tags.length){
         result = result.filter((item: IIdeaOverall) => item.tags.length ? tags.every(t => item.tags.includes(t)): false)
+      }
+
+      if(notes && notes.length){
+        result = result.filter((item: IIdeaOverall) => item.notes.length ? notes.every(t => item.notes.includes(t)): false)
       }
   
       if(offset){

@@ -78,12 +78,21 @@ export class NoteController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Get('/list')
-  async findBy(@Req() request: Request, @Query() query : {text?: string, limit?: number, offset?: number, lastId?: string, tags?: string[]})
+  @Get('/list/full')
+  async listFull(@Req() request: Request, @Query() query : {text?: string, limit?: number, offset?: number, lastId?: string, tags?: string[]})
   :Promise<{data: INoteOverall[], isLast?: boolean, total?: number}> {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
     return this.rootService.findBy({...query, authorId: payload.userId})
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/list')
+  async list(@Req() request: Request, @Query() query : {text?: string})
+  :Promise<INote[]> {
+    const token = getToken(request);
+    const payload = jwt.verify(token, config.jwtSecret);
+    return this.rootService.simpleFindBy({...query, authorId: payload.userId})
   }
 
   @UseGuards(AuthGuard('jwt'))

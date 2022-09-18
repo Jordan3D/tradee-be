@@ -58,7 +58,7 @@ export class TagService {
   async getAllBy(authorId: string, text: string = ''): Promise<ITag[] | undefined> {  
     return await this.rootModel.findAll({
       where: {authorId, title: {
-        [Op.like]: `%${text}%`,
+        [Op.like]: `%${text.toLowerCase()}%`,
       }},
       order: [['level','ASC']]
     })

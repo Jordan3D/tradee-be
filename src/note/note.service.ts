@@ -162,4 +162,10 @@ export class NoteService {
       return error;
     }
   }
+
+  async simpleFindBy( { text, authorId }:  Readonly<{ text?: string, authorId: string }>):Promise<INote[]> {
+    return await this.rootModel.findAll({ where: { authorId,  title: {
+      [Op.like]: `%${text.toLowerCase()}%`,
+    } }, raw: true})
+  }
 }
