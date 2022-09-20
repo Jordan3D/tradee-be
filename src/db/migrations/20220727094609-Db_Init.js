@@ -162,8 +162,6 @@ module.exports = {
       updatedAt: Sequelize.DATE,
       key: Sequelize.STRING,
       url: Sequelize.STRING,
-      parentId: Sequelize.UUID,
-      parentType: Sequelize.STRING,
       authorId: {
         type: Sequelize.UUID,
         references: {
@@ -193,7 +191,7 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
       },
-      photos: Sequelize.JSON
+      photos: Sequelize.ARRAY
     });
     await queryInterface.createTable('JournalItem', {
       id: {  type: Sequelize.UUID,

@@ -20,7 +20,6 @@ export class CreateBody {
   @IsArray()
   notes: string[];
 
-  @IsOptional()
   @IsArray()
-  photos: string[];
+  images: string[];
 }

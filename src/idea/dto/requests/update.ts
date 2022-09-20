@@ -32,9 +32,5 @@ export class UpdateBody {
 
   @IsOptional()
   @IsArray()
-  photosAdded?: string[];
-
-  @IsOptional()
-  @IsArray()
-  photosDeleted?: string[];
+  images?: string[];
 }

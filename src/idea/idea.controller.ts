@@ -26,7 +26,6 @@ import { IdeaService } from './idea.service';
 import { Request } from 'express';
 import config from '../config';
 import { getToken } from '../util';
-import { INote } from 'src/interfaces/note.interface';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { IFile } from 'src/interfaces/file.interface';
 import { FileService } from 'src/file/file.service';
@@ -81,7 +80,7 @@ export class IdeaController {
       throw new NotFoundException('Idea not found');
     }
 
-    return new ResponseDto(entity);
+    return new ResponseDto({...entity, images: entity.images});
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -91,7 +90,7 @@ export class IdeaController {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
     try {
-      const file = await this.rootService.uploadPhoto({file: photo.buffer, name: photo.originalname, authorId: payload.userId});
+      const file = await this.rootService.uploadImage({file: photo.buffer, name: photo.originalname, authorId: payload.userId});
 
       console.dir(file);
       
@@ -117,7 +116,7 @@ export class IdeaController {
       throw new UnauthorizedException('Not allowed to delete');
     }
 
-    return this.rootService.deletePhoto(id)
+    return this.rootService.deleteImage(id)
   }
 
   @UseGuards(AuthGuard('jwt'))

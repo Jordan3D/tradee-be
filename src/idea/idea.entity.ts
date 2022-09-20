@@ -16,6 +16,6 @@ export class IdeaEntity extends BaseEntity {
   @BelongsTo(() => UserEntity)
   author: UserEntity
 
-  @Column({ type: DataType.JSON})
-  photos: string[];
+  @Column({ type: DataType.ARRAY(DataType.STRING)})
+  images: string[];
 }

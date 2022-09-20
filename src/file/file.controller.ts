@@ -43,8 +43,6 @@ export class FileController {
 
     try {
       const file = await this.rootService.uploadPublicFile({file: image.buffer, key: fileName, authorId});
-
-      console.dir(file);
       
       return file;
     }catch(error){

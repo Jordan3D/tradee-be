@@ -20,24 +20,17 @@ export class FileService {
   };
 
   async getByIds(ids: string[]): Promise<IFile[] | undefined> {
-    const result = await this.rootModel.findAll({
-      where: {id: {
-        [Op.in]: ids,
-      },},
-      raw: true
-    });
-    
-    return result;
-  }
-
-  async getByParentId(parentId: string): Promise<IFile[]> {
-    const result = await this.rootModel.findAll({ where: { parentId }, raw: true });
-
-    return result;
-  }
-
-  async setParent(id: string, parentId: string, parentType: 'idea'): Promise<boolean> {
-    return !!this.rootModel.update({parentId, parentType}, { where: { id } });
+    try {
+      const result = await this.rootModel.findAll({
+        where: {id: {
+          [Op.in]: ids,
+        },},
+        raw: true
+      });
+      return result;
+    } catch (e){
+      return e
+    }
   }
 
   async findBy(

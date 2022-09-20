@@ -42,11 +42,7 @@ export class IdeaService {
 
     if (result && result.id && data.notes) {
       const list = await this.notesService.create({ noteIds: data.notes, parentId: result.id, parentType: 'idea' });
-      tags = list.map((l: NotesEntity) => l.noteId) || [];
-    }
-
-    if (result && result.id && data.photos) {
-      Promise.all(data.photos.map(async pId => this.fileService.setParent(pId, result.id, 'idea')))
+      notes = list.map((l: NotesEntity) => l.noteId) || [];
     }
 
     return { ...result, tags, notes };
@@ -103,17 +99,8 @@ export class IdeaService {
   async update(id: string, updates: Omit<UpdateBody, 'id' | 'createdAt' | 'updatedAt' | 'author'>): Promise<IIdeaOverall | undefined> {
     try {
       const one = await this.rootModel.findOne({ where: { id }, raw: true });
-      let photos = one.photos;
 
-      if (updates.photosAdded) {
-        photos = photos.concat(updates.photosAdded);
-      }
-      if (updates.photosDeleted) {
-        photos = photos.filter(pId => updates.photosDeleted.includes(pId));
-        Promise.all(updates.photosDeleted.map(async pId => await this.fileService.deletePublicFile(pId)))
-      }
-
-      await this.rootModel.update({ ...updates, photos }, { where: { id } });
+      await this.rootModel.update({ ...updates }, { where: { id } });
 
       if (updates.tagsAdded) {
         await this.tagsService.create({ parentId: id, tagIds: updates.tagsAdded, parentType: 'note' });
@@ -141,24 +128,22 @@ export class IdeaService {
       ...one,
       tags: await this.tagsService.getByParentId(id),
       notes: await this.notesService.getByParentId(id),
-      photos: await this.fileService.getByParentId(id)
+      images: await this.fileService.getByIds(one.images || [])
     }
   }
 
   async findBy(
-    { text, authorId, offset, limit, lastId , tags, notes}:
+    { text, authorId, offset, limit, lastId, tags, notes }:
       Readonly<{ text?: string, authorId: string, limit?: number, offset?: number, lastId?: string, tags?: string[], notes?: string[] }>
-  ): Promise<{data: IIdeaOverall[], isLast?: boolean, total?: number}> {
+  ): Promise<{ data: IIdeaOverall[], isLast?: boolean, total?: number }> {
     let lastItem;
-    
+
     try {
-      if(lastId){
-        lastItem = await this.rootModel.findOne({where: {id: lastId}, raw: true});
+      if (lastId) {
+        lastItem = await this.rootModel.findOne({ where: { id: lastId }, raw: true });
       }
 
-      //   ${tags ? `AND idea.id IN ( SELECT "parentId" FROM "Tags" WHERE "tagId" IN (${tags.map(t => `'${t}'`).join(',')}))` : ''}
-     
-      let result =  await this.rootModel.sequelize.query(
+      let result = await this.rootModel.sequelize.query(
         `SELECT *  FROM "Idea" idea,
         LATERAL (
           SELECT ARRAY (
@@ -178,69 +163,68 @@ export class IdeaService {
           ${text ? `AND LOWER("title") LIKE LOWER('%${text}%')` : ''}
           ${lastItem ? `AND idea."createdAt" < '${new Date(lastItem.createdAt).toISOString()}'` : ''}
           ORDER BY "createdAt" DESC
-          ${limit ? `LIMIT ${limit + 1}` : ''}
+          ${limit ? `LIMIT ${Number(limit) + 1}` : ''}
           ${offset ? `OFFSET ${offset}` : ''}`,
         { type: QueryTypes.SELECT }
       );
 
-      const next = {} as {total?: number, isLast?: boolean};
+      const next = {} as { total?: number, isLast?: boolean };
 
-      if(tags && tags.length){
-        result = result.filter((item: IIdeaOverall) => item.tags.length ? tags.every(t => item.tags.includes(t)): false)
+      if (tags && tags.length) {
+        result = result.filter((item: IIdeaOverall) => item.tags.length ? tags.every(t => item.tags.includes(t)) : false)
       }
 
-      if(notes && notes.length){
-        result = result.filter((item: IIdeaOverall) => item.notes.length ? notes.every(t => item.notes.includes(t)): false)
+      if (notes && notes.length) {
+        result = result.filter((item: IIdeaOverall) => item.notes.length ? notes.every(t => item.notes.includes(t)) : false)
       }
-  
-      if(offset){
-        next.total =  (result[0] as IIdeaOverall & {full_count: number}).full_count;
-        result.forEach((item: IIdeaOverall & {full_count: number}) => delete item.full_count)
+
+      if (offset) {
+        next.total = (result[0] as IIdeaOverall & { full_count: number }).full_count;
+        result.forEach((item: IIdeaOverall & { full_count: number }) => delete item.full_count)
       } else {
-        if(limit >= result.length){
+        if (limit >= result.length) {
           next.isLast = true;
         } else {
           next.isLast = false;
           result.pop();
-        }      
+        }
+      }
+
+      const imagesMap: Record<string, IFile> = {};
+      // concat all images 
+      const imagesArr = (result.map((idea: IIdea) => idea.images || [])).flat();
+
+      const imgResult = await this.fileService.getByIds(imagesArr);
+
+      for ( const [index, element] of imgResult.entries()){
+        imagesMap[element.id] = element;
       }
 
       return {
         ...next,
-        data: await Promise.all(result.map(async(idea: IIdeaOverall) => ({
+        data: result.map((idea: Omit<IIdeaOverall, 'images'> & { images: string[] }) => ({
           ...idea,
-          photos: await this.fileService.getByParentId(idea.id)
-        })))
+          images: idea.images && idea.images.length ? idea.images.map(imgId => imagesMap[imgId]) : []
+        }))
       }
-    }catch (error) {
-      return error;
-    }
-  }
-
-  async uploadPhoto(argsData: { authorId: string, file: Buffer, name: string }): Promise<IFile> {
-    try {
-      const { authorId, file, name } = argsData;
-      const key = `${authorId}_file_${name}`;
-
-      return await this.fileService.uploadPublicFile({file, key, authorId});
     } catch (error) {
       return error;
     }
   }
 
-  async deletePhoto(id: string): Promise<boolean> {
+  async uploadImage(argsData: { authorId: string, file: Buffer, name: string }): Promise<IFile> {
     try {
-      const photo = await this.fileService.getById(id);
-      if (photo.parentId && photo.parentType === 'idea') {
-        const idea = await this.getById(photo.parentId);
-        const photos = idea.photos.slice();
-        const index = photos.indexOf(id);
-        if (index !== -1) {
-          photos.splice(index, 1);
-          await this.rootModel.update({ photos }, { where: { id } });
-        }
-      }
+      const { authorId, file, name } = argsData;
+      const key = `${authorId}_file_${name}`;
 
+      return await this.fileService.uploadPublicFile({ file, key, authorId });
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async deleteImage(id: string): Promise<boolean> {
+    try {
       return await this.fileService.deletePublicFile(id);
     } catch (e) {
       return e;

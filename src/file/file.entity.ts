@@ -15,10 +15,4 @@ export class FileEntity extends BaseEntity {
 
   @BelongsTo(() => UserEntity)
   author: UserEntity;
-
-  @Column({type: DataType.UUID})
-  parentId?: string;
-
-  @Column({ type: 'varchar'})
-  parentType?: 'idea'
 }

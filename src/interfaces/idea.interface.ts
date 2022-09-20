@@ -7,7 +7,7 @@ export interface IIdea extends IBase{
   title: string;
   content: string;
   authorId: string;
-  photos: string[];
+  images: string[];
 }
 
 export interface ICreateIdea{
@@ -16,20 +16,20 @@ export interface ICreateIdea{
   authorId: string;
   tags: string[];
   notes: string[];
-  photos: string[];
+  images: string[];
 }
 
-export interface IIdeaOverall extends Omit<IIdea, 'photos'>{
+export interface IIdeaOverall extends Omit<IIdea, 'images'>{
   tags: string[];
   notes: string[];
-  photos: IFile[];
+  images: IFile[];
 }
 
 export interface IIdeaFull extends IBase{
   title: string;
   content: string;
   authorId: string;
-  photos: IFile[];
+  images: IFile[];
   notes: INote[];
   tags: ITag[];
 }
