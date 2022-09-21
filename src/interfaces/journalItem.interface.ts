@@ -1,4 +1,5 @@
 import {IBase} from './base.interface';
+import { IIdea } from './idea.interface';
 import { INote } from './note.interface';
 import { ITag } from './tag.interface';
 import { ITrade } from './trade.interface';
@@ -14,6 +15,7 @@ export interface IJournalItem extends IBase{
   authorId: string;
   pnls: string[];
   transactions: string[];
+  ideas: string[];
 }
 
 export interface IJournalItemOverall extends IJournalItem{
@@ -29,4 +31,5 @@ export interface IJournalItemFull extends IBase{
   notes: INote[];
   pnls: ITrade[];
   transactions: ITradeTransaction[];
+  ideas: IIdea[];
 }

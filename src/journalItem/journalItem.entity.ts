@@ -21,4 +21,7 @@ export class JournalItemEntity extends BaseEntity {
 
   @Column({ type: DataType.JSON})
   transactions: string[];
+
+  @Column({ type: DataType.JSON})
+  ideas: string[];
 }

@@ -21,6 +21,10 @@ export class UpdateBody {
   @IsArray()
   transactions: string[];
 
+  @IsOptional()
+  @IsArray()
+  ideas: string[];
+
   @IsArray()
   tagsAdded?: string[];
 

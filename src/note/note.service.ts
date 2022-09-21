@@ -128,7 +128,7 @@ export class NoteService {
               ) AS tags
            ) t
         WHERE "authorId"='${authorId}' 
-        ${text ? `AND LOWER("title") LIKE LOWER('%${text}%')` : ''}
+        ${text ? `AND LOWER("title") LIKE '%${text.toLowerCase()}%'` : ''}
         ${lastItem ? `AND note."createdAt" < '${new Date(lastItem.createdAt).toISOString()}'` : ''}
         ORDER BY "createdAt" DESC
         ${limit ? `LIMIT ${limit}` : ''}
@@ -165,7 +165,7 @@ export class NoteService {
 
   async simpleFindBy( { text, authorId }:  Readonly<{ text?: string, authorId: string }>):Promise<INote[]> {
     return await this.rootModel.findAll({ where: { authorId,  title: {
-      [Op.like]: `%${text.toLowerCase()}%`,
+      [Op.iLike]: `%${text.toLowerCase()}%`,
     } }, raw: true})
   }
 }

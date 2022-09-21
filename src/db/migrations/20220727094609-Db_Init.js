@@ -213,7 +213,8 @@ module.exports = {
         onDelete: 'SET NULL',
       },
       pnls: Sequelize.JSON,
-      transactions: Sequelize.JSON
+      transactions: Sequelize.JSON,
+      ideas: Sequelize.JSON
     });
     await queryInterface.createTable('Pair', {
       id: {  type: Sequelize.UUID,

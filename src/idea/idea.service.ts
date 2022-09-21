@@ -144,7 +144,7 @@ export class IdeaService {
       }
 
       let result = await this.rootModel.sequelize.query(
-        `SELECT *  FROM "Idea" idea,
+        `SELECT *${offset !== undefined ? `, COUNT(*) OVER() as full_count` : ''} FROM "Idea" idea,
         LATERAL (
           SELECT ARRAY (
              SELECT "tagId"
@@ -158,13 +158,13 @@ export class IdeaService {
                 FROM   "Notes" notes
                 WHERE  notes."parentId" = idea.id
                 ) AS notes
-             ) n${offset ? `, count(*) OVER() AS full_count` : ''}
+             ) n
           WHERE "authorId"='${authorId}'
-          ${text ? `AND LOWER("title") LIKE LOWER('%${text}%')` : ''}
+          ${text ? `AND LOWER("title") LIKE '%${text.toLowerCase()}%'` : ''}
           ${lastItem ? `AND idea."createdAt" < '${new Date(lastItem.createdAt).toISOString()}'` : ''}
           ORDER BY "createdAt" DESC
-          ${limit ? `LIMIT ${Number(limit) + 1}` : ''}
-          ${offset ? `OFFSET ${offset}` : ''}`,
+          ${limit !== undefined ? `LIMIT ${Number(limit) + 1}` : ''}
+          ${offset !== undefined ? `OFFSET ${offset}` : ''}`,
         { type: QueryTypes.SELECT }
       );
 
@@ -178,7 +178,7 @@ export class IdeaService {
         result = result.filter((item: IIdeaOverall) => item.notes.length ? notes.every(t => item.notes.includes(t)) : false)
       }
 
-      if (offset) {
+      if (offset !== undefined) {
         next.total = (result[0] as IIdeaOverall & { full_count: number }).full_count;
         result.forEach((item: IIdeaOverall & { full_count: number }) => delete item.full_count)
       } else {
@@ -208,6 +208,7 @@ export class IdeaService {
         }))
       }
     } catch (error) {
+      console.log(error);
       return error;
     }
   }

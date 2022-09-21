@@ -10,6 +10,7 @@ import { TagModule } from 'src/tag';
 import { NoteModule } from 'src/note';
 import { TradeModule } from 'src/trade';
 import { TradeTransactionModule } from 'src/tradeTransaction';
+import { IdeaModule } from 'src/idea';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { TradeTransactionModule } from 'src/tradeTransaction';
     forwardRef(() => NoteModule),
     forwardRef(() => TradeModule),
     forwardRef(() => TradeTransactionModule),
+    forwardRef(() => IdeaModule),
   ],
   providers: [JournalItemService],
   exports: [JournalItemService],

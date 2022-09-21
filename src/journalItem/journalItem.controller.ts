@@ -26,7 +26,7 @@ import { JournalItemService } from './journalItem.service';
 import { Request } from 'express';
 import config from '../config';
 import { getToken } from '../util';
-import { IJournalItem, IJournalItemFull, IJournalItemOverall } from 'src/interfaces/journalItem.interface';
+import { IJournalItemFull, IJournalItemOverall } from 'src/interfaces/journalItem.interface';
 
 /**
  * users controller

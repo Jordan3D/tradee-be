@@ -21,6 +21,7 @@ import { TradeService } from 'src/trade';
 import { TradeTransactionService } from 'src/tradeTransaction';
 import { ITrade } from 'src/interfaces/trade.interface';
 import { ITradeTransaction } from 'src/interfaces/tradeTransaction.interface';
+import { IdeaService } from 'src/idea/idea.service';
 
 @Injectable()
 export class JournalItemService {
@@ -39,6 +40,8 @@ export class JournalItemService {
     private readonly tradeService: TradeService,
     @Inject(forwardRef(() => TradeTransactionService))
     private readonly transactionService: TradeTransactionService,
+    @Inject(forwardRef(() => IdeaService))
+    private readonly ideaService: IdeaService,
   ) {}
   
   async create(data: Omit<IJournalItemOverall, 'id' | 'createdAt' | 'updatedAt' | 'settings'>): Promise<IJournalItemOverall> { 
@@ -147,11 +150,12 @@ export class JournalItemService {
 ,  { type: QueryTypes.SELECT });
  
    result = await Promise.all(list.map(async item => {
-    const itemResult = {...item, tags: [], notes: [], pnls: [], transactions: []} as IJournalItemFull;
+    const itemResult = {...item, tags: [], notes: [], pnls: [], transactions: [], ideas: []} as IJournalItemFull;
     itemResult.tags = await this.tagService.getByIds(item.tags);
     itemResult.notes = await this.noteService.getByIds(item.notes);
     itemResult.pnls = await this.tradeService.getByIds(item.pnls);
     itemResult.transactions = await this.transactionService.getByIds(item.transactions);
+    itemResult.ideas = await this.ideaService.getByIds(item.ideas);
     return itemResult;
    }));
 

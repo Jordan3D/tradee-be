@@ -18,6 +18,8 @@ export class ResponseDto implements IJournalItem {
   pnls: string[];
 
   transactions: string[];
+
+  ideas: string[];
   
   createdAt: Date;
   

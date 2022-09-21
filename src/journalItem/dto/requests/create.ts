@@ -27,4 +27,8 @@ export class CreateBody {
   @IsOptional()
   @IsArray()
   transactions: string[];
+
+  @IsOptional()
+  @IsArray()
+  ideas: string[];
 }
