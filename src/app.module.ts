@@ -18,6 +18,7 @@ import { JournalItemModule } from './journalItem';
 import { IdeaModule } from './idea';
 import { FileModule } from './file/file.module';
 import config from 'src/config';
+import { DiaryItemModule } from './diaryItem/diaryItem.module';
 
 @Module({
   imports: [
@@ -42,7 +43,8 @@ import config from 'src/config';
     TradeModule,
     TradeTransactionModule,
     BrokerModule,
-    IdeaModule
+    IdeaModule,
+    DiaryItemModule
   ],
   controllers: [AppController],
   providers: [AppService],

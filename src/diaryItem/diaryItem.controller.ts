@@ -14,26 +14,24 @@ import {
   Delete
 } from '@nestjs/common';
 
-import {getUnixTime} from 'date-fns';
-
 
 const jwt = require('jsonwebtoken');
 
 import { AuthGuard } from '@nestjs/passport';
 import { CreateBody, UpdateBody } from './dto/requests';
 import { ResponseDto } from './dto/responses';
-import { JournalItemService } from './journalItem.service';
+import { DiaryItemService } from './diaryItem.service';
 import { Request } from 'express';
 import config from '../config';
 import { getToken } from '../util';
-import { IJournalItemFull, IJournalItemOverall } from 'src/interfaces/journalItem.interface';
+import { IDiaryItemFull, IDiaryItemOverall } from 'src/interfaces/diaryItem.interface';
 
 
-@Controller('/journal-item')
-export class JournalItemController {
+@Controller('/diary-item')
+export class DiaryItemController {
 
-  private readonly logger = new Logger(JournalItemController.name);
-  constructor(private readonly rootService: JournalItemService) { }
+  private readonly logger = new Logger(DiaryItemController.name);
+  constructor(private readonly rootService: DiaryItemService) { }
 
   @Post('/create')
   async create(
@@ -60,7 +58,7 @@ export class JournalItemController {
   // for calendar search
   @UseGuards(AuthGuard('jwt'))
   @Get('/list')
-  async findByDate(@Req() request: Request, @Query() query):Promise<IJournalItemFull[]> {
+  async findByDate(@Req() request: Request, @Query() query):Promise<IDiaryItemFull[]> {
     const token = getToken(request);
     const payload = jwt.verify(token, config.jwtSecret);
     const {startDate, endDate} = query;
@@ -69,7 +67,7 @@ export class JournalItemController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/:id')
-  async findOne(@Param('id') id: string): Promise<IJournalItemOverall> {
+  async findOne(@Param('id') id: string): Promise<IDiaryItemOverall> {
     const entity = await this.rootService.findById({id});
     if (entity === undefined) {
       throw new NotFoundException('Item not found');

@@ -15,12 +15,8 @@ import { NotesEntity } from 'src/notes/notes.entity';
 import { format } from 'date-fns';
 import { TagService } from 'src/tag';
 import { NoteService } from 'src/note';
-import { ITag } from 'src/interfaces/tag.interface';
-import { INote } from 'src/interfaces/note.interface';
 import { TradeService } from 'src/trade';
 import { TradeTransactionService } from 'src/tradeTransaction';
-import { ITrade } from 'src/interfaces/trade.interface';
-import { ITradeTransaction } from 'src/interfaces/tradeTransaction.interface';
 import { IdeaService } from 'src/idea/idea.service';
 
 @Injectable()
@@ -160,26 +156,6 @@ export class JournalItemService {
    }));
 
    return result;
-  }
-
-  async findBy(
-    {text, authorId, lastId, limit}: 
-    Readonly<{text?: string, authorId: string, limit?: number, lastId?: string}>
-    ): Promise<IJournalItem[]> {
-      const id = lastId ? {$gt: lastId} : {};
-      return await this.rootModel.sequelize.query(
-        `SELECT *  FROM "Note" note,
-        LATERAL (
-           SELECT ARRAY (
-              SELECT "tagId"
-              FROM   "Tags" tags
-              WHERE  tags."parentId" = note.id
-              ) AS tags
-           ) t
-        WHERE "authorId"='${authorId}'
-        ORDER BY "createdAt" ASC`,
-         { type: QueryTypes.SELECT }
-        );
   }
 
   async findById(

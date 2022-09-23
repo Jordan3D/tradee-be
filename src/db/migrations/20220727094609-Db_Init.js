@@ -216,6 +216,26 @@ module.exports = {
       transactions: Sequelize.JSON,
       ideas: Sequelize.JSON
     });
+    await queryInterface.createTable('DiaryItem', {
+      id: {  type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        allowNull: false,
+        primaryKey: true
+      },
+      createdAt: Sequelize.DATE,
+      updatedAt: Sequelize.DATE,
+      title: Sequelize.STRING,
+      content: Sequelize.STRING,
+      authorId: {
+        type: Sequelize.UUID,
+        references: {
+          model: 'User',
+          key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL',
+      }
+    });
     await queryInterface.createTable('Pair', {
       id: {  type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
@@ -323,6 +343,7 @@ module.exports = {
     await queryInterface.dropTable('Tags');
     await queryInterface.dropTable('Pair');
     await queryInterface.dropTable('JournalItem');
+    await queryInterface.dropTable('DiaryItem');
     await queryInterface.dropTable('Idea');
     await queryInterface.dropTable('File');
     await queryInterface.dropTable('Comment');
