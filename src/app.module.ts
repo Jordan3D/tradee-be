@@ -7,7 +7,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './user';
 import { TagModule } from './tag';
-import { CommentModule } from './comment';
 import { NoteModule } from './note';
 import { TradeModule } from './trade';
 import { PairModule } from './pair';
@@ -36,7 +35,6 @@ import { DiaryItemModule } from './diaryItem/diaryItem.module';
     UsersModule,
     JournalItemModule,
     TagModule,
-    CommentModule,
     NoteModule,
     NotesModule,
     PairModule,

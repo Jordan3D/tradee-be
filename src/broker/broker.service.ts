@@ -130,7 +130,9 @@ export class BrokerService {
     }
 
     const restClientOptions = {
-      recv_window: 1000
+      recv_window: 2000,
+      enable_time_sync: true,
+      sync_interval_ms: 2000
     };
 
     const client = new LinearClient(
@@ -166,9 +168,9 @@ export class BrokerService {
         page += 1;
 
         const { result, ret_msg } = await client.getClosedPnl({ symbol: pair.title, page, start_time: syncPnl});
-        // console.log(ret_msg);
+        console.log(ret_msg);
 
-        await (new Promise<void>((resolve) => setTimeout(() => resolve(), 1000) ));
+        await (new Promise<void>((resolve) => setTimeout(() => resolve(), 2000) ));
         if (!result?.data)
           break;
 
@@ -186,10 +188,10 @@ export class BrokerService {
         page += 1;
 
         const { result, ret_msg } = await client.getTradeRecords({ symbol: pair.title, page, start_time: syncTransactions});
-        // console.log(ret_msg);
+        console.log(ret_msg);
         
 
-        await (new Promise<void>((resolve) => setTimeout(() => resolve(), 1000) ));
+        await (new Promise<void>((resolve) => setTimeout(() => resolve(), 2000) ));
         if (!result?.data)
           break;
 

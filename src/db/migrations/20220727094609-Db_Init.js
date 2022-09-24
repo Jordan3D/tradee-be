@@ -130,28 +130,6 @@ module.exports = {
         onDelete: 'SET NULL',
       }
     });
-    await queryInterface.createTable('Comment', {
-      id: {  type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
-        allowNull: false,
-        primaryKey: true
-      },
-      createdAt: Sequelize.DATE,
-      updatedAt: Sequelize.DATE,
-      content: Sequelize.STRING,
-      rating: Sequelize.INTEGER,
-      parentId: Sequelize.UUID,
-      parentType: Sequelize.STRING,
-      authorId: {
-        type: Sequelize.UUID,
-        references: {
-          model: 'User',
-          key: 'id',
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
-      }
-    });
     await queryInterface.createTable('File', {
       id: {  type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
@@ -191,7 +169,7 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
       },
-      photos: Sequelize.ARRAY
+      photos: Sequelize.ARRAY(Sequelize.TEXT)
     });
     await queryInterface.createTable('JournalItem', {
       id: {  type: Sequelize.UUID,
@@ -202,7 +180,7 @@ module.exports = {
       createdAt: Sequelize.DATE,
       updatedAt: Sequelize.DATE,
       title: Sequelize.STRING,
-      content: Sequelize.STRING,
+      content: Sequelize.TEXT,
       authorId: {
         type: Sequelize.UUID,
         references: {
@@ -225,7 +203,7 @@ module.exports = {
       createdAt: Sequelize.DATE,
       updatedAt: Sequelize.DATE,
       title: Sequelize.STRING,
-      content: Sequelize.STRING,
+      content: Sequelize.TEXT,
       authorId: {
         type: Sequelize.UUID,
         references: {
@@ -346,7 +324,6 @@ module.exports = {
     await queryInterface.dropTable('DiaryItem');
     await queryInterface.dropTable('Idea');
     await queryInterface.dropTable('File');
-    await queryInterface.dropTable('Comment');
     await queryInterface.dropTable('Broker');
     await queryInterface.dropTable('Notes');
     await queryInterface.dropTable('Note');
