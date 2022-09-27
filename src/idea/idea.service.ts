@@ -179,7 +179,7 @@ export class IdeaService {
       }
 
       if (offset !== undefined) {
-        next.total = (result[0] as IIdeaOverall & { full_count: number }).full_count;
+        next.total = result[0] ? (result[0] as IIdeaOverall & { full_count: number })?.full_count : 0;
         result.forEach((item: IIdeaOverall & { full_count: number }) => delete item.full_count)
       } else {
         if (limit >= result.length) {

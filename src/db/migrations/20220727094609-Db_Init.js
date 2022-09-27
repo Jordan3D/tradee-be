@@ -169,7 +169,10 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
       },
-      photos: Sequelize.ARRAY(Sequelize.TEXT)
+      images: { type: Sequelize.ARRAY(Sequelize.TEXT),
+        defaultValue: [],
+        allowNull: false,
+      },
     });
     await queryInterface.createTable('JournalItem', {
       id: {  type: Sequelize.UUID,
@@ -190,9 +193,18 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
       },
-      pnls: Sequelize.JSON,
-      transactions: Sequelize.JSON,
-      ideas: Sequelize.JSON
+      pnls: { type: Sequelize.JSON,
+        defaultValue: [],
+        allowNull: false,
+      },
+      transactions: { type: Sequelize.JSON,
+        defaultValue: [],
+        allowNull: false,
+      },
+      ideas: { type: Sequelize.JSON,
+        defaultValue: [],
+        allowNull: false,
+      },
     });
     await queryInterface.createTable('DiaryItem', {
       id: {  type: Sequelize.UUID,

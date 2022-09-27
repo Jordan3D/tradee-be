@@ -24,7 +24,7 @@ export class DiaryItemService {
     private readonly tagService: TagService
   ) { }
 
-  async create(data: Omit<IDiaryItemOverall, 'id' | 'createdAt' | 'updatedAt' | 'settings'>): Promise<IDiaryItemOverall> {
+  async create(data: Omit<IDiaryItemOverall, 'id' | 'updatedAt' | 'settings'>): Promise<IDiaryItemOverall> {
     try {
       const dataToCreate = { ...data, author: { id: data.authorId } }
       const result = (await this.rootModel.create(dataToCreate)).toJSON();

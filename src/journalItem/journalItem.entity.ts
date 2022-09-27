@@ -16,12 +16,12 @@ export class JournalItemEntity extends BaseEntity {
   @BelongsTo(() => UserEntity)
   author: UserEntity;
 
-  @Column({ type: DataType.JSON})
+  @Column({ type: DataType.JSON, defaultValue: []})
   pnls: string[];
 
-  @Column({ type: DataType.JSON})
+  @Column({ type: DataType.JSON, defaultValue: []})
   transactions: string[];
 
-  @Column({ type: DataType.JSON})
+  @Column({ type: DataType.JSON, defaultValue: []})
   ideas: string[];
 }
