@@ -143,7 +143,7 @@ export class JournalItemService {
                ) AS notes
             ) n
         WHERE "authorId"='${authorId}'
-        AND "createdAt" BETWEEN '${format(new Date(startDate * 1000), 'yyyy/MM/dd')}' AND '${format(new Date(endDate * 1000), 'yyyy/MM/dd')}'`
+        AND "createdAt" BETWEEN '${format(new Date(startDate * 1000), 'yyyy/MM/dd HH:mm:ss')}' AND '${format(new Date(endDate * 1000), 'yyyy/MM/dd HH:mm:ss')}'`
         , { type: QueryTypes.SELECT });
 
       result = await Promise.all(list.map(async item => {
