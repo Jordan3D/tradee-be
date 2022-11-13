@@ -79,8 +79,9 @@ export class TagService {
 
     Object.keys(updates).forEach(key => {
       if(key === 'parentId'){
+        const parentId = updates["parentId"];
         dataToUpdate[key] = updates[key],
-        dataToUpdate.level = parent.level + 1;
+        dataToUpdate.level = parentId ? parent.level + 1 : 0;
       } else {
         dataToUpdate[key] = updates[key];
       }

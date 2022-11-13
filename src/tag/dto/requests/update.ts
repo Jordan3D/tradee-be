@@ -12,7 +12,7 @@ export class UpdateBody {
   
   @IsOptional()
   @IsBoolean()
-  isMeta?: boolean;
+  isMeta?: boolean | null;
 
   @IsOptional()
   @IsString()
